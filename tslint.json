@@ -2,6 +2,7 @@
   "extends": "tslint:recommended",
   "rules": {
     "indent": [true, "tabs"],
-    "variable-name": false
+    "variable-name": false,
+    "triple-equals": false
   }
 }

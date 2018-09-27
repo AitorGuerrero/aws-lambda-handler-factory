@@ -2,7 +2,7 @@ import {expect} from "chai";
 import {beforeEach, describe} from "mocha";
 import {AwsLambdaHandlerFactory, LambdaHandler} from "../aws-lambda-handler-factory.class";
 import {IContext} from "../context-interface";
-import {AwsLambdaApiHandlerFactory} from "./aws-lambda-api-handler-factory.class";
+import {AwsLambdaApiHandlerFactory} from "./handler-factory.class";
 
 describe("Having a api handler factory", () => {
 	let factory: AwsLambdaHandlerFactory;
