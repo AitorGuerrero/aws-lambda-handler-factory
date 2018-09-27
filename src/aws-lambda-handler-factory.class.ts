@@ -40,7 +40,7 @@ export class AwsLambdaHandlerFactory {
 	 * Remember to handle the 'error' events
 	 * https://nodejs.org/api/events.html#events_error_events
 	 */
-	public readonly eventEmitter: EventEmitter;
+	public readonly eventEmitter = new EventEmitter();
 
 	/**
 	 * Functions executed in some execution points.
@@ -69,11 +69,6 @@ export class AwsLambdaHandlerFactory {
 	public timeOutSecureMargin = 500;
 
 	private timer: any;
-
-	constructor(
-	) {
-		this.eventEmitter = new EventEmitter();
-	}
 
 	/**
 	 * @generic I The input received by the handler

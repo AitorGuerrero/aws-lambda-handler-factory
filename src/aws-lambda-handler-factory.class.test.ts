@@ -10,12 +10,12 @@ describe("Having a handler factory", () => {
 	const ctx = {getRemainingTimeInMillis: () => 0} as IContext;
 	const response = "response";
 
-	let handlerFactory: AwsLambdaHandlerFactory;
+	let factory: AwsLambdaHandlerFactory;
 	let handle: LambdaHandler<any, any>;
 
 	beforeEach(() => {
-		handlerFactory = new AwsLambdaHandlerFactory();
-		handle = handlerFactory.build(() => response);
+		factory = new AwsLambdaHandlerFactory();
+		handle = factory.build(() => response);
 	});
 	it("should call the callback with the response", async () => {
 		const handlerResponse = await asyncHandler(handle)(null, ctx);
@@ -24,8 +24,8 @@ describe("Having a handler factory", () => {
 	it("should call onInit callback before calling the handler", async () => {
 		let callBackCalled = false;
 		let callbackCalledBeforeHandler = false;
-		handlerFactory.callbacks.onInit = () => callBackCalled = true;
-		handle = handlerFactory.build(() => callbackCalledBeforeHandler = callBackCalled === false);
+		factory.callbacks.onInit = () => callBackCalled = true;
+		handle = factory.build(() => callbackCalledBeforeHandler = callBackCalled === false);
 		await asyncHandler(handle)(null, ctx);
 		expect(callBackCalled).to.be.true;
 		expect(callbackCalledBeforeHandler).to.be.false;
@@ -33,27 +33,27 @@ describe("Having a handler factory", () => {
 	it("should call onSucceeded callback after calling the handler", async () => {
 		let callBackCalled = false;
 		let callbackCalledBeforeHandler = false;
-		handlerFactory.callbacks.onSucceeded = () => callBackCalled = true;
-		handle = handlerFactory.build(() => callbackCalledBeforeHandler = callBackCalled === false);
+		factory.callbacks.onSucceeded = () => callBackCalled = true;
+		handle = factory.build(() => callbackCalledBeforeHandler = callBackCalled === false);
 		await asyncHandler(handle)(null, ctx);
 		expect(callBackCalled).to.be.true;
 		expect(callbackCalledBeforeHandler).to.be.true;
 	});
 	it("should not call onError callback", async () => {
 		let callBackCalled = false;
-		handlerFactory.callbacks.onError = () => callBackCalled = true;
+		factory.callbacks.onError = () => callBackCalled = true;
 		await asyncHandler(handle)(null, ctx);
 		expect(callBackCalled).to.be.false;
 	});
 	describe("and the handler fails", () => {
 		const error = new Error("ERROR");
 		beforeEach(() => {
-			handlerFactory.eventEmitter.on("error", () => null);
-			handle = handlerFactory.build(() => Promise.reject(error));
+			factory.eventEmitter.on("error", () => null);
+			handle = factory.build(() => Promise.reject(error));
 		});
 		it("should emit the error", async () => {
 			let emittedErr: any = null;
-			handlerFactory.eventEmitter.on("error", (err) => emittedErr = err);
+			factory.eventEmitter.on("error", (err) => emittedErr = err);
 			await new Promise((rs) => handle(null, ctx, (err) => rs(err)));
 			await new Promise((rs) => setTimeout(rs, 0)); // enqueue process
 			expect(emittedErr).to.be.eq(error);
@@ -64,7 +64,7 @@ describe("Having a handler factory", () => {
 		});
 		it("should emit finished event", async () => {
 			let emittedFinished = false;
-			handlerFactory.eventEmitter.on(HandlerEventType.finished, () => emittedFinished = true);
+			factory.eventEmitter.on(HandlerEventType.finished, () => emittedFinished = true);
 			await new Promise((rs) => handle(null, ctx, (err) => rs(err)));
 			await new Promise((rs) => setTimeout(rs, 0)); // enqueue process
 			expect(emittedFinished).to.be.true;
@@ -72,8 +72,8 @@ describe("Having a handler factory", () => {
 		it("should call onError callback after calling the handler", async () => {
 			let callBackCalled = false;
 			let callbackCalledBeforeHandler = false;
-			handlerFactory.callbacks.onError = () => callBackCalled = true;
-			handle = handlerFactory.build(async () => {
+			factory.callbacks.onError = () => callBackCalled = true;
+			handle = factory.build(async () => {
 				callbackCalledBeforeHandler = callBackCalled === false;
 				throw error;
 			});
