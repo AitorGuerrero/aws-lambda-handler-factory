@@ -1,10 +1,7 @@
 import {LambdaHandler} from "../aws-lambda-handler-factory.class";
-import {IContext} from "../context-interface";
 import {IApiInput} from "./api-input.interface";
-import {AwsLambdaApiHandlerFactory} from "./handler-factory.class";
+import {ApiHandler, AwsLambdaApiHandlerFactory} from "./handler-factory.class";
 import {IApiOutput} from "./output.interface";
-
-export type ApiHandler = (input: IApiInput, ctx: IContext) => Promise<IApiOutput> | IApiOutput;
 
 interface IResourceEndpoints {
 	GET?: ApiHandler;

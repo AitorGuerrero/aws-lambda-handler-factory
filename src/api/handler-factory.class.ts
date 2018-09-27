@@ -6,7 +6,7 @@ import ApiRequestError from "./api-request-error.class";
 import {IAwsLambdaApiHandlerFactory} from "./handler-factory.interface";
 import {IApiOutput} from "./output.interface";
 
-export type ApiHandler = (input: IApiInput, ctx: IContext) => Promise<IApiOutput>;
+export type ApiHandler = (input: IApiInput, ctx: IContext) => Promise<IApiOutput> | IApiOutput;
 
 /**
  * A class for creating api gateway handlers
