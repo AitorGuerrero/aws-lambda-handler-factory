@@ -1,12 +1,7 @@
 {
   "extends": "tslint:recommended",
   "rules": {
-    "forin": false,
-    "triple-equals": false,
-    "indent": [
-      true,
-      "tabs"
-    ],
-    "no-unused-expression": false
+    "indent": [true, "tabs"],
+    "variable-name": false
   }
 }
