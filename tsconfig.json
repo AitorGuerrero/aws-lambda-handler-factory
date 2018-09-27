@@ -4,7 +4,7 @@
         "target": "es2015",
         "noImplicitAny": true,
         "sourceMap": false,
-        "declaration": false
+        "declaration": true
     },
     "exclude": [
         "node_modules"
