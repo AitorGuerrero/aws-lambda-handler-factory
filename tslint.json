@@ -3,6 +3,7 @@
   "rules": {
     "indent": [true, "tabs"],
     "variable-name": false,
-    "triple-equals": false
+    "triple-equals": false,
+    "no-conditional-assignment": false
   }
 }
