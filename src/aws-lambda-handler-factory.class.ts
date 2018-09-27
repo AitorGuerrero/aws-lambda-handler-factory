@@ -36,6 +36,9 @@ export class AwsLambdaHandlerFactory {
 
 	/**
 	 * Emits the events defined in the HandlerEventType enum
+	 * IMPORTANT!!
+	 * Remember to handle the 'error' events
+	 * https://nodejs.org/api/events.html#events_error_events
 	 */
 	public readonly eventEmitter: EventEmitter;
 
@@ -51,13 +54,13 @@ export class AwsLambdaHandlerFactory {
 	 * }
 	 */
 	public readonly callbacks: {
-		onInit: (input: unknown, ctx: IContext) => Promise<unknown>;
-		onSucceeded: (response: unknown) => Promise<unknown>;
-		onError: (err: Error) => Promise<unknown>;
+		onInit: (input: unknown, ctx: IContext) => unknown;
+		onSucceeded: (response: unknown) => unknown;
+		onError: (err: Error) => unknown;
 	} = {
-		onError: () => Promise.resolve(),
-		onInit: () => Promise.resolve(),
-		onSucceeded: () => Promise.resolve(),
+		onError: () => null,
+		onInit: () => null,
+		onSucceeded: () => null,
 	};
 
 	/**
