@@ -3,7 +3,7 @@ export interface IApiInput {
 	headers: {
 		[key: string]: string;
 	};
-	httpMethod: string;
+	httpMethod: "GET" | "POST" | "PUT" | "DELETE";
 	isBase64Encoded: boolean;
 	path: string;
 	pathParameters: {
