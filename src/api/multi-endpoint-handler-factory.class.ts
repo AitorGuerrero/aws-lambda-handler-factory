@@ -79,7 +79,7 @@ export class AwsLambdaApiMultiEndpointHandlerFactory {
 
 	constructor(
 		private apiHandlerFactory: AwsLambdaApiHandlerFactory,
-		endpoints: IEndpoints,
+		public endpoints: IEndpoints,
 	) {
 		this.endpointsConfig = AwsLambdaApiMultiEndpointHandlerFactory.composeEndpointsConfig(endpoints);
 	}
