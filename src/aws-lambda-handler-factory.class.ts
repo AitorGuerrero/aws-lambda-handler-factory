@@ -54,13 +54,13 @@ export class AwsLambdaHandlerFactory {
 	 * }
 	 */
 	public readonly callbacks: {
-		onInit: (input: unknown, ctx: IContext) => Promise<unknown> | unknown;
-		onSucceeded: (response: unknown) => Promise<unknown> | unknown;
-		onError: (err: Error) => Promise<unknown> |unknown;
+		onInit: Array<(input: unknown, ctx: IContext) => (Promise<unknown> | unknown)>;
+		onSucceeded: Array<(response: unknown) => (Promise<unknown> | unknown)>;
+		onError: Array<(err: Error) => (Promise<unknown> | unknown)>;
 	} = {
-		onError: () => null,
-		onInit: () => null,
-		onSucceeded: () => null,
+		onError: [],
+		onInit: [],
+		onSucceeded: [],
 	};
 
 	/**
@@ -77,17 +77,17 @@ export class AwsLambdaHandlerFactory {
 	 */
 	public build<I, O>(handler: (event: I, ctx: IContext) => Promise<O> | O): LambdaHandler<I, O> {
 		return async (input, ctx, cb) => {
-			await this.callbacks.onInit(input, ctx);
+			await Promise.all(this.callbacks.onInit.map((c) => c(input, ctx)));
 			this.eventEmitter.emit(handlerEventType.called, input, ctx);
 			this.controlTimeOut(ctx);
 			try {
 				const response = await handler(input, ctx);
-				await this.callbacks.onSucceeded(response);
+				await Promise.all(this.callbacks.onSucceeded.map((c) => c(response)));
 				cb(null, response);
 				this.eventEmitter.emit(handlerEventType.succeeded, response);
 			} catch (err) {
 				cb(err);
-				await this.callbacks.onError(err);
+				await Promise.all(this.callbacks.onError.map((c) => c(err)));
 				this.eventEmitter.emit(handlerEventType.error, err);
 			}
 			this.eventEmitter.emit(handlerEventType.finished);

@@ -24,7 +24,7 @@ describe("Having a handler factory", () => {
 	it("should call onInit callback before calling the handler", async () => {
 		let callBackCalled = false;
 		let callbackCalledBeforeHandler = false;
-		factory.callbacks.onInit = () => callBackCalled = true;
+		factory.callbacks.onInit.push(() => callBackCalled = true);
 		handle = factory.build(() => callbackCalledBeforeHandler = callBackCalled === false);
 		await asyncHandler(handle)(null, ctx);
 		expect(callBackCalled).to.be.true;
@@ -33,7 +33,7 @@ describe("Having a handler factory", () => {
 	it("should call onSucceeded callback after calling the handler", async () => {
 		let callBackCalled = false;
 		let callbackCalledBeforeHandler = false;
-		factory.callbacks.onSucceeded = () => callBackCalled = true;
+		factory.callbacks.onSucceeded.push(() => callBackCalled = true);
 		handle = factory.build(() => callbackCalledBeforeHandler = callBackCalled === false);
 		await asyncHandler(handle)(null, ctx);
 		expect(callBackCalled).to.be.true;
@@ -41,7 +41,7 @@ describe("Having a handler factory", () => {
 	});
 	it("should not call onError callback", async () => {
 		let callBackCalled = false;
-		factory.callbacks.onError = () => callBackCalled = true;
+		factory.callbacks.onError.push(() => callBackCalled = true);
 		await asyncHandler(handle)(null, ctx);
 		expect(callBackCalled).to.be.false;
 	});
@@ -72,7 +72,7 @@ describe("Having a handler factory", () => {
 		it("should call onError callback after calling the handler", async () => {
 			let callBackCalled = false;
 			let callbackCalledBeforeHandler = false;
-			factory.callbacks.onError = () => callBackCalled = true;
+			factory.callbacks.onError.push(() => callBackCalled = true);
 			handle = factory.build(async () => {
 				callbackCalledBeforeHandler = callBackCalled === false;
 				throw error;

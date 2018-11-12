@@ -6,9 +6,13 @@ import {IContext} from "../context-interface";
 export class SqsConsumerHandlerFactory {
 
 	public readonly callbacks: {
-		onInitBatchProcess: () => Promise<any>
-		onBatchProcessed(): Promise<any>
-		onMessageError(message: any, err: Error): Promise<any>,
+		onInitBatchProcess: Array<() => Promise<unknown>>;
+		onBatchProcessed: Array<() => Promise<unknown>>;
+		onMessageError: Array<(message: any, err: Error) => Promise<unknown>>;
+	} = {
+		onBatchProcessed: [],
+		onInitBatchProcess: [],
+		onMessageError: [],
 	};
 
 	public timeOutSecureMargin = 10000;
@@ -23,39 +27,30 @@ export class SqsConsumerHandlerFactory {
 	constructor(
 		private handlerFactory: AwsLambdaHandlerFactory,
 		private sqs: SQS,
-		callbacks?: {
-			onInitBatchProcess?(): Promise<any>
-			onBatchProcessed?(): Promise<any>
-			onMessageError?(message: any, err: Error): Promise<any>,
-		},
 	) {
-		this.callbacks = Object.assign({
-			onBatchProcessed: () => Promise.resolve(),
-			onInitBatchProcess: () => Promise.resolve(),
-			onMessageError: () => Promise.resolve(),
-		}, callbacks || {});
 	}
 
 	public build<Message>(
 		queueUrl: string,
 		processMessages: (nextMessage: () => Promise<Message>, ctx: IContext) => Promise<any>,
 	)  {
+		this.queueUrl = queueUrl;
+
 		return this.handlerFactory.build(async (e: any, ctx: IContext) => {
-			this.queueUrl = queueUrl;
 			this.reset(ctx);
 			this.processedMessages = [];
 			while (this.timeLimitHasNotReached() && !this.allProcessed()) {
-				await this.callbacks.onInitBatchProcess();
+				await Promise.all(this.callbacks.onInitBatchProcess.map((c) => c()));
 				try {
 					await processMessages(async () => this.nextMessage<Message>(), ctx);
 					this.moveCurrentMessageToProcessed();
-					await this.callbacks.onBatchProcessed();
+					await Promise.all(this.callbacks.onBatchProcessed.map((c) => c()));
 				} catch (error) {
 					this.currentMessage = undefined;
-					await this.callbacks.onMessageError(this.currentMessage, error);
+					await Promise.all(this.callbacks.onMessageError.map((c) => c(this.currentMessage, error)));
 					continue;
 				}
-				await this.deleteSqsMessages(queueUrl, this.processedMessages);
+				await this.deleteSqsMessages();
 			}
 			if (this.timer) {
 				clearTimeout(this.timer);
@@ -107,13 +102,13 @@ export class SqsConsumerHandlerFactory {
 		return event;
 	}
 
-	private async deleteSqsMessages(sqsQueueUrl: string, sqsMessages: SQS.Message[]) {
+	private async deleteSqsMessages() {
 		const chunk = 10;
-		for (let i = 0,  j = sqsMessages.length; i * chunk < j; i++) {
-			const batch =  sqsMessages.slice(i * chunk, (i * chunk) + chunk - 1);
+		for (let i = 0,  j = this.processedMessages.length; i * chunk < j; i++) {
+			const batch =  this.processedMessages.slice(i * chunk, (i * chunk) + chunk - 1);
 			await new Promise((rs, rj) => this.sqs.deleteMessageBatch({
 				Entries: batch.map((m) => ({Id: m.MessageId, ReceiptHandle: m.ReceiptHandle})),
-				QueueUrl: sqsQueueUrl,
+				QueueUrl: this.queueUrl,
 			}, (err) => err ? rj(err) : rs(err)));
 		}
 	}
