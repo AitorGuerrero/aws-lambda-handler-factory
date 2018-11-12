@@ -1,36 +1,12 @@
 import {expect} from "chai";
 import {beforeEach, describe} from "mocha";
+import {FakeSqs} from "../../helpers/fake-sqs.class";
 import {AwsLambdaHandlerFactory} from "../aws-lambda-handler-factory.class";
 import {SqsFifoConsumerHandlerFactory} from "./sqs-fifo-consumer-handler-factory.class";
 
-class FakeSqs {
-	public batches: Array<{ReceiptHandle: string, Body: string}> = [];
-	private processingMessages: any[] = [];
+describe("Having a sqs fifo consumer handler factory", () => {
 
-	public receiveMessage(opts: any, cb: any) {
-		if (this.processingMessages.length > 0) {
-			return cb(null, {Messages: []});
-		}
-		this.processingMessages = this.batches.slice(0, 3);
-		cb(null, {Messages: this.processingMessages});
-	}
-
-	public deleteMessageBatch(req: {Entries: Array<{ReceiptHandle: string, Id: string}>}, cb: any) {
-		for (const m of req.Entries) {
-			this.deleteMessage(m);
-		}
-		cb(null, {Failed: []});
-	}
-
-	private deleteMessage(m: {ReceiptHandle: string, Id: string}) {
-		const i = this.batches.findIndex((j) => j.ReceiptHandle === m.ReceiptHandle);
-		this.batches.splice(i, i + 1);
-		const i2 = this.processingMessages.findIndex((j) => j.ReceiptHandle === m.ReceiptHandle);
-		this.processingMessages.splice(i2, i2 + 1);
-	}
-}
-
-describe("having a sqs fifo consumer handler factory", () => {
+	const queueUrl = "queueUrl";
 
 	let factory: SqsFifoConsumerHandlerFactory<any>;
 	let factoryBase: AwsLambdaHandlerFactory;
@@ -40,7 +16,7 @@ describe("having a sqs fifo consumer handler factory", () => {
 		sqs = new FakeSqs();
 		factoryBase = new AwsLambdaHandlerFactory();
 		factory = new SqsFifoConsumerHandlerFactory<any>(
-			"queueUrl",
+			queueUrl,
 			sqs as any,
 			factoryBase,
 		);
@@ -48,14 +24,8 @@ describe("having a sqs fifo consumer handler factory", () => {
 
 	describe("having 6 messages batch and loading batches of 3 messages", () => {
 		beforeEach(() => {
-			sqs.batches.push(
-				{ReceiptHandle: "M-1", Body: "1"},
-				{ReceiptHandle: "M-2", Body: "2"},
-				{ReceiptHandle: "M-3", Body: "3"},
-				{ReceiptHandle: "M-4", Body: "4"},
-				{ReceiptHandle: "M-5", Body: "5"},
-				{ReceiptHandle: "M-6", Body: "6"},
-			);
+			sqs.addQueue(queueUrl, true);
+			sqs.addMessages(queueUrl, [1, 2, 3, 4, 5, 6]);
 		});
 		it("should process all the messages", async () => {
 			const processedMessages: number[] = [];
@@ -80,7 +50,7 @@ describe("having a sqs fifo consumer handler factory", () => {
 					item = await next();
 				}
 			})(null, {} as any, (err) => err ? rj(err) : rs()));
-			expect(sqs.batches.length).to.be.eq(0);
+			expect(sqs.getAvailableMessages(queueUrl).length).to.be.eq(0);
 		});
 		describe("and the fifth message failed", () => {
 			it("should process first 4 messages", async () => {
@@ -121,7 +91,7 @@ describe("having a sqs fifo consumer handler factory", () => {
 				await new Promise((rs, rj) => factory
 					.build(async (next) => await next())
 					(null, {} as any, (err) => err ? rj(err) : rs()));
-				expect(sqs.batches.length).to.be.eq(0);
+				expect(sqs.getAvailableMessages(queueUrl).length).to.be.eq(0);
 			});
 		});
 	});

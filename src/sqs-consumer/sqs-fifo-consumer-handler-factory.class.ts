@@ -1,5 +1,5 @@
 import {SQS} from "aws-sdk";
-import {AwsLambdaHandlerFactory, HandlerEventType} from "../aws-lambda-handler-factory.class";
+import {AwsLambdaHandlerFactory, handlerEventType} from "../aws-lambda-handler-factory.class";
 import {IContext} from "../context-interface";
 
 export class SqsFifoConsumerHandlerFactory<Message> {
@@ -27,7 +27,7 @@ export class SqsFifoConsumerHandlerFactory<Message> {
 		private sqs: SQS,
 		private handlerFactory: AwsLambdaHandlerFactory,
 	) {
-		handlerFactory.eventEmitter.on(HandlerEventType.timeOut, () => this.timedOut = true);
+		handlerFactory.eventEmitter.on(handlerEventType.timeOut, () => this.timedOut = true);
 		this.processedMessages = [];
 	}
 

@@ -8,7 +8,7 @@ import {AwsLambdaApiHandlerFactory} from "./handler-factory.class";
 import {AwsLambdaApiMultiEndpointHandlerFactory} from "./multi-endpoint-handler-factory.class";
 import {IApiOutput} from "./output.interface";
 
-describe.only("Having a multi endpoint handler factory", () => {
+describe("Having a multi endpoint handler factory", () => {
 
 	const ctx = {getRemainingTimeInMillis: () => 0} as IContext;
 	const httpMethod = "GET";

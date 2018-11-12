@@ -7,7 +7,7 @@ export type LambdaHandler<Input, Output> = (input: Input, ctx: IContext, cb: (er
 /**
  * Emitted event types
  */
-export enum HandlerEventType {
+export enum handlerEventType {
 	called = "called",
 	succeeded = "succeeded",
 	error = "error",
@@ -54,9 +54,9 @@ export class AwsLambdaHandlerFactory {
 	 * }
 	 */
 	public readonly callbacks: {
-		onInit: (input: unknown, ctx: IContext) => unknown;
-		onSucceeded: (response: unknown) => unknown;
-		onError: (err: Error) => unknown;
+		onInit: (input: unknown, ctx: IContext) => Promise<unknown> | unknown;
+		onSucceeded: (response: unknown) => Promise<unknown> | unknown;
+		onError: (err: Error) => Promise<unknown> |unknown;
 	} = {
 		onError: () => null,
 		onInit: () => null,
@@ -78,19 +78,19 @@ export class AwsLambdaHandlerFactory {
 	public build<I, O>(handler: (event: I, ctx: IContext) => Promise<O> | O): LambdaHandler<I, O> {
 		return async (input, ctx, cb) => {
 			await this.callbacks.onInit(input, ctx);
-			this.eventEmitter.emit(HandlerEventType.called, input, ctx);
+			this.eventEmitter.emit(handlerEventType.called, input, ctx);
 			this.controlTimeOut(ctx);
 			try {
 				const response = await handler(input, ctx);
 				await this.callbacks.onSucceeded(response);
 				cb(null, response);
-				this.eventEmitter.emit(HandlerEventType.succeeded, response);
+				this.eventEmitter.emit(handlerEventType.succeeded, response);
 			} catch (err) {
 				cb(err);
 				await this.callbacks.onError(err);
-				this.eventEmitter.emit(HandlerEventType.error, err);
+				this.eventEmitter.emit(handlerEventType.error, err);
 			}
-			this.eventEmitter.emit(HandlerEventType.finished);
+			this.eventEmitter.emit(handlerEventType.finished);
 			this.clearTimeOutControl();
 		};
 	}
@@ -103,7 +103,7 @@ export class AwsLambdaHandlerFactory {
 		if (remainingTime <= 0) {
 			return;
 		}
-		this.timer = setTimeout(() => this.eventEmitter.emit(HandlerEventType.timeOut), remainingTime);
+		this.timer = setTimeout(() => this.eventEmitter.emit(handlerEventType.timeOut), remainingTime);
 	}
 
 	private clearTimeOutControl() {

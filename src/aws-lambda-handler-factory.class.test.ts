@@ -2,7 +2,7 @@
 
 import {expect} from "chai";
 import {beforeEach, describe} from "mocha";
-import {AwsLambdaHandlerFactory, HandlerEventType, LambdaHandler} from "./aws-lambda-handler-factory.class";
+import {AwsLambdaHandlerFactory, handlerEventType, LambdaHandler} from "./aws-lambda-handler-factory.class";
 import {IContext} from "./context-interface";
 
 describe("Having a handler factory", () => {
@@ -64,7 +64,7 @@ describe("Having a handler factory", () => {
 		});
 		it("should emit finished event", async () => {
 			let emittedFinished = false;
-			factory.eventEmitter.on(HandlerEventType.finished, () => emittedFinished = true);
+			factory.eventEmitter.on(handlerEventType.finished, () => emittedFinished = true);
 			await new Promise((rs) => handle(null, ctx, (err) => rs(err)));
 			await new Promise((rs) => setTimeout(rs, 0)); // enqueue process
 			expect(emittedFinished).to.be.true;
