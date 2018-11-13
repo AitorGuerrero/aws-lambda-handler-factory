@@ -44,12 +44,13 @@ export class SqsConsumerHandlerFactory {
 				try {
 					await processMessages(async () => this.nextMessage<Message>(), ctx);
 					this.moveCurrentMessageToProcessed();
-					await Promise.all(this.callbacks.onBatchProcessed.map((c) => c()));
 				} catch (error) {
+					// Unassign failed message to not delete it and let return to the queue.
 					this.currentMessage = undefined;
 					await Promise.all(this.callbacks.onMessageError.map((c) => c(this.currentMessage, error)));
 					continue;
 				}
+				await Promise.all(this.callbacks.onBatchProcessed.map((c) => c()));
 				await this.deleteSqsMessages();
 			}
 			if (this.timer) {
