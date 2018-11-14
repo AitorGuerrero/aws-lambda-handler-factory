@@ -105,8 +105,8 @@ export class SqsConsumerHandlerFactory {
 
 	private async deleteSqsMessages() {
 		const chunk = 10;
-		for (let i = 0,  j = this.processedMessages.length; i * chunk < j; i++) {
-			const batch =  this.processedMessages.slice(i * chunk, (i * chunk) + chunk - 1);
+		for (let i = 0, j = this.processedMessages.length; i < j; i += chunk) {
+			const batch =  this.processedMessages.slice(i, i + chunk);
 			await new Promise((rs, rj) => this.sqs.deleteMessageBatch({
 				Entries: batch.map((m) => ({Id: m.MessageId, ReceiptHandle: m.ReceiptHandle})),
 				QueueUrl: this.queueUrl,

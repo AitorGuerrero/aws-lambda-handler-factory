@@ -91,7 +91,7 @@ export class SqsFifoConsumerHandlerFactory<Message> {
 
 	private async deleteProcessedMessages() {
 		const chunk = 10;
-		for (let i = 0,  j = this.processedMessages.length; i < j; i += chunk) {
+		for (let i = 0, j = this.processedMessages.length; i < j; i += chunk) {
 			const batch =  this.processedMessages.slice(i, i + chunk);
 			const response = await new Promise<SQS.Types.DeleteMessageBatchResult>((rs, rj) => this.sqs.deleteMessageBatch({
 				Entries: batch.map((b) => ({
