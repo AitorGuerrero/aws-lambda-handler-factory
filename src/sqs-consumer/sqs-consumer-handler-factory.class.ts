@@ -112,6 +112,7 @@ export class SqsConsumerHandlerFactory {
 				QueueUrl: this.queueUrl,
 			}, (err) => err ? rj(err) : rs(err)));
 		}
+		this.processedMessages = [];
 	}
 
 	private async nextSqsMessage() {
