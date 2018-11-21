@@ -79,12 +79,11 @@ export class AwsLambdaApiMultiEndpointHandlerFactory {
 
 	constructor(
 		private apiHandlerFactory: AwsLambdaApiHandlerFactory,
-		endpoints: IEndpoints,
-	) {
-		this.endpointsConfig = AwsLambdaApiMultiEndpointHandlerFactory.composeEndpointsConfig(endpoints);
-	}
+	) {}
 
-	public build(): LambdaHandler<IApiInput, IApiOutput> {
+	public build(endpoints: IEndpoints): LambdaHandler<IApiInput, IApiOutput> {
+		this.endpointsConfig = AwsLambdaApiMultiEndpointHandlerFactory.composeEndpointsConfig(endpoints);
+
 		return this.apiHandlerFactory.build(async (event, ctx) => {
 			const handlerConfig = this.getHandlerConfigFromInput(event);
 			if (handlerConfig === undefined) {

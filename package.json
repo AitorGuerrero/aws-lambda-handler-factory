@@ -6,11 +6,13 @@
   "scripts": {
     "build": "tsc",
     "test": "nyc --reporter=html mocha ./**/*.test.js",
-    "style": "tslint -p .",
-    "precommit": "npm run build && npm run style && npm run test"
+    "style": "tslint -p ."
   },
   "author": "Aitor Guerrero <aitor.guerrero.dev@gmail.com>",
   "license": "ISC",
+  "hooks": {
+    "pre-commit": "npm run build && npm run style && npm run test"
+  },
   "devDependencies": {
     "@types/chai": "^4.1.5",
     "@types/mocha": "^5.2.5",
