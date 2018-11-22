@@ -38,9 +38,20 @@ export class AwsLambdaApiHandlerFactory implements IAwsLambdaApiHandlerFactory {
 		onError: () => Promise.resolve(),
 	};
 
+	private corsConfig: {
+		allowCredentials?: boolean,
+		allowedOrigin?: string,
+	};
+
 	constructor(
 		private handlerFactory: AwsLambdaHandlerFactory,
-	) {}
+		corsConfig?: {
+			allowCredentials?: boolean,
+			allowedOrigin: string,
+		},
+	) {
+		this.corsConfig = corsConfig || {};
+	}
 
 	/**
 	 * Creates a basic handler.
@@ -49,7 +60,7 @@ export class AwsLambdaApiHandlerFactory implements IAwsLambdaApiHandlerFactory {
 	public build(apiHandler: ApiHandler): LambdaHandler<IApiInput, IApiOutput> {
 		return this.handlerFactory.build(async (input: IApiInput, ctx: IContext) => {
 			try {
-				return composeResponse(await apiHandler(input, ctx));
+				return this.composeResponse(await apiHandler(input, ctx));
 			} catch (err) {
 				await this.callbacks.onError(err);
 				await this.eventEmitter.emit("error", err);
@@ -57,6 +68,25 @@ export class AwsLambdaApiHandlerFactory implements IAwsLambdaApiHandlerFactory {
 			}
 		});
 	}
+
+	private composeResponse(response: IApiOutput) {
+		return Object.assign(
+			{
+				statusCode: 200,
+			},
+			response,
+			{
+				body: response.body === undefined ? ""
+					: typeof response.body === "string" ? response.body
+						: JSON.stringify(response.body),
+				headers: Object.assign({
+					"Access-Control-Allow-Credentials": this.corsConfig.allowCredentials,
+					"Access-Control-Allow-Origin": this.corsConfig.allowedOrigin,
+				}, response.headers !== undefined ? response.headers : {}),
+			},
+		);
+	}
+
 }
 
 function buildServerErrorResponse() {
@@ -79,19 +109,4 @@ function buildErrorResponse(err: ApiRequestError) {
 		headers: {},
 		statusCode: err.statusCode,
 	};
-}
-
-function composeResponse(response: IApiOutput) {
-	return Object.assign(
-		{
-			statusCode: 200,
-		},
-		response,
-		{
-			body: response.body === undefined ? ""
-				: typeof response.body === "string" ? response.body
-					: JSON.stringify(response.body),
-			headers: Object.assign({}, response.headers !== undefined ? response.headers : {}),
-		},
-	);
 }

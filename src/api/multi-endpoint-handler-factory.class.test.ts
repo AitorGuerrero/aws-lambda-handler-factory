@@ -27,15 +27,12 @@ describe("Having a multi endpoint handler factory", () => {
 		factory = new AwsLambdaHandlerFactory();
 		apiFactory = new AwsLambdaApiHandlerFactory(factory);
 		output = {};
-		multiEndpointFactory = new AwsLambdaApiMultiEndpointHandlerFactory(
-			apiFactory,
-			{[`/pre-path/{${paramName}}/post-path`]: {GET: (i) => {
-				parsedInput = i;
+		multiEndpointFactory = new AwsLambdaApiMultiEndpointHandlerFactory(apiFactory);
+		handle = multiEndpointFactory.build({[`/pre-path/{${paramName}}/post-path`]: {GET: (i) => {
+			parsedInput = i;
 
-				return output;
-			}}},
-		);
-		handle = multiEndpointFactory.build();
+			return output;
+		}}});
 		input = {
 			httpMethod,
 			path: `/pre-path/${paramValue}/post-path`,
