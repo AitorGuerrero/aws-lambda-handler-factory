@@ -49,7 +49,7 @@ export class AwsLambdaApiMultiEndpointHandlerFactory {
 	}
 
 	private static getTestRegExpFromPath(path: string) {
-		return new RegExp("^" + path.replace(/{.*?}/g, "(.*)") + "$");
+		return new RegExp("^" + path.replace(/{.*?}/g, "([^/]*)") + "$");
 	}
 
 	private static getHandlerFromInput(input: IApiInput, config: IEndpointConfig) {
