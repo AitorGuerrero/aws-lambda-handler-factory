@@ -64,7 +64,9 @@ export class AwsLambdaApiHandlerFactory implements IAwsLambdaApiHandlerFactory {
 			} catch (err) {
 				await this.callbacks.onError(err);
 				await this.eventEmitter.emit("error", err);
-				return (err instanceof ApiRequestError) ? buildErrorResponse(err) : buildServerErrorResponse();
+				return (err instanceof ApiRequestError)
+					? this.buildErrorResponse(err)
+					: this.buildServerErrorResponse();
 			}
 		});
 	}
@@ -87,26 +89,31 @@ export class AwsLambdaApiHandlerFactory implements IAwsLambdaApiHandlerFactory {
 		);
 	}
 
-}
+	private buildServerErrorResponse() {
+		return {
+			body: JSON.stringify({
+				error: { code: "system-error" },
+				success: false,
+			}),
+			headers: {
+				"Access-Control-Allow-Credentials": this.corsConfig.allowCredentials,
+				"Access-Control-Allow-Origin": this.corsConfig.allowedOrigin,
+			},
+			statusCode: 500,
+		};
+	}
 
-function buildServerErrorResponse() {
-	return {
-		body: JSON.stringify({
-			error: { code: "system-error" },
-			success: false,
-		}),
-		headers: {},
-		statusCode: 500,
-	};
-}
-
-function buildErrorResponse(err: ApiRequestError) {
-	return {
-		body: JSON.stringify({
-			error: { code: err.name },
-			success: false,
-		}),
-		headers: {},
-		statusCode: err.statusCode,
-	};
+	private buildErrorResponse(err: ApiRequestError) {
+		return {
+			body: JSON.stringify({
+				error: { code: err.name },
+				success: false,
+			}),
+			headers: {
+				"Access-Control-Allow-Credentials": this.corsConfig.allowCredentials,
+				"Access-Control-Allow-Origin": this.corsConfig.allowedOrigin,
+			},
+			statusCode: err.statusCode,
+		};
+	}
 }
