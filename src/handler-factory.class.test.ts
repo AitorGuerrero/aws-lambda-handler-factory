@@ -2,24 +2,25 @@
 
 import {expect} from "chai";
 import {beforeEach, describe} from "mocha";
-import {AwsLambdaHandlerFactory, handlerEventType, LambdaHandler} from "./aws-lambda-handler-factory.class";
 import {IContext} from "./context-interface";
+import {HandlerCustomError} from "./handler-custom-error.class";
+import {AwsLambdaHandlerFactory, handlerEventType, LambdaHandler} from "./handler-factory.class";
 
 describe("Having a handler factory", () => {
 
 	const ctx = {getRemainingTimeInMillis: () => 0} as IContext;
-	const response = "response";
+	const handlerResponse = "response";
 
 	let factory: AwsLambdaHandlerFactory;
 	let handle: LambdaHandler<any, any>;
 
 	beforeEach(() => {
 		factory = new AwsLambdaHandlerFactory();
-		handle = factory.build(() => response);
+		handle = factory.build(() => handlerResponse);
 	});
 	it("should call the callback with the response", async () => {
-		const handlerResponse = await asyncHandler(handle)(null, ctx);
-		expect(handlerResponse).to.be.equal(response);
+		const response = await asyncHandler(handle)(null, ctx);
+		expect(response).to.be.equal(handlerResponse);
 	});
 	it("should call onInit callback before calling the handler", async () => {
 		let callBackCalled = false;
@@ -69,6 +70,13 @@ describe("Having a handler factory", () => {
 			await new Promise((rs) => setTimeout(rs, 0)); // enqueue process
 			expect(emittedFinished).to.be.true;
 		});
+		it("should not emit succeeded event", async () => {
+			let emitted = false;
+			factory.eventEmitter.on(handlerEventType.succeeded, () => emitted = true);
+			await new Promise((rs) => handle(null, ctx, (err) => rs(err)));
+			await new Promise((rs) => setTimeout(rs, 0)); // enqueue process
+			expect(emitted).to.be.false;
+		});
 		it("should call onError callback after calling the handler", async () => {
 			let callBackCalled = false;
 			let callbackCalledBeforeHandler = false;
@@ -84,6 +92,41 @@ describe("Having a handler factory", () => {
 				expect(callBackCalled).to.be.true;
 				expect(callbackCalledBeforeHandler).to.be.true;
 			}
+		});
+	});
+	describe("and the handler fails with custom response", () => {
+		const errorContent = "ERROR CONTENT";
+		const error = new HandlerCustomError(errorContent);
+		beforeEach(() => {
+			factory.eventEmitter.on("error", () => null);
+			handle = factory.build(() => Promise.reject(error));
+		});
+		it("should return the error content", async () => {
+			const response = await new Promise<HandlerCustomError<unknown>>(
+				(rs, rj) => handle(null, ctx, (err, data) => err ? rj(err) : rs(data)),
+			);
+			expect(response).to.be.eql(errorContent);
+		});
+		it("should emit the error", async () => {
+			let emittedErr: any = null;
+			factory.eventEmitter.on("error", (err) => emittedErr = err);
+			await new Promise((rs) => handle(null, ctx, (err) => rs(err)));
+			await new Promise((rs) => setTimeout(rs, 0)); // enqueue process
+			expect(emittedErr).to.be.eq(error);
+		});
+		it("should emit finished event", async () => {
+			let emittedFinished = false;
+			factory.eventEmitter.on(handlerEventType.finished, () => emittedFinished = true);
+			await new Promise((rs) => handle(null, ctx, (err) => rs(err)));
+			await new Promise((rs) => setTimeout(rs, 0)); // enqueue process
+			expect(emittedFinished).to.be.true;
+		});
+		it("should not emit succeeded event", async () => {
+			let emitted = false;
+			factory.eventEmitter.on(handlerEventType.succeeded, () => emitted = true);
+			await new Promise((rs) => handle(null, ctx, (err) => rs(err)));
+			await new Promise((rs) => setTimeout(rs, 0)); // enqueue process
+			expect(emitted).to.be.false;
 		});
 	});
 });

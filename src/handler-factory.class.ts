@@ -1,5 +1,6 @@
 import {EventEmitter} from "events";
 import {IContext} from "./context-interface";
+import {HandlerCustomError} from "./handler-custom-error.class";
 
 export type LambdaHandler<Input, Output> = (input: Input, ctx: IContext, cb: (error?: Error, data?: Output) => unknown)
 	=> unknown;
@@ -86,7 +87,11 @@ export class AwsLambdaHandlerFactory {
 				cb(null, response);
 				this.eventEmitter.emit(handlerEventType.succeeded, response);
 			} catch (err) {
-				cb(err);
+				if (err instanceof HandlerCustomError) {
+					cb(null, err.response);
+				} else {
+					cb(err);
+				}
 				await Promise.all(this.callbacks.onError.map((c) => c(err)));
 				this.eventEmitter.emit(handlerEventType.error, err);
 			}
