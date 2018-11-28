@@ -5,10 +5,10 @@ import {IContext} from "../context-interface";
 import {AwsLambdaHandlerFactory, LambdaHandler} from "../handler-factory.class";
 import {IApiInput} from "./api-input.interface";
 import {AwsLambdaApiHandlerFactory} from "./handler-factory.class";
-import {AwsLambdaApiMultiEndpointHandlerFactory} from "./multi-endpoint-handler-factory.class";
+import {AwsLambdaProxyApiHandlerFactory} from "./proxy-handler-factory.class";
 import {IApiOutput} from "./output.interface";
 
-describe("Having a multi endpoint handler factory", () => {
+describe("Having a proxy api handler factory", () => {
 
 	const ctx = {getRemainingTimeInMillis: () => 0} as IContext;
 	const httpMethod = "GET";
@@ -17,7 +17,7 @@ describe("Having a multi endpoint handler factory", () => {
 
 	let factory: AwsLambdaHandlerFactory;
 	let apiFactory: AwsLambdaApiHandlerFactory;
-	let multiEndpointFactory: AwsLambdaApiMultiEndpointHandlerFactory;
+	let multiEndpointFactory: AwsLambdaProxyApiHandlerFactory;
 	let handle: LambdaHandler<any, any>;
 	let input: IApiInput;
 	let parsedInput: IApiInput;
@@ -27,7 +27,7 @@ describe("Having a multi endpoint handler factory", () => {
 		factory = new AwsLambdaHandlerFactory();
 		apiFactory = new AwsLambdaApiHandlerFactory(factory);
 		output = {};
-		multiEndpointFactory = new AwsLambdaApiMultiEndpointHandlerFactory(apiFactory);
+		multiEndpointFactory = new AwsLambdaProxyApiHandlerFactory(apiFactory);
 		handle = multiEndpointFactory.build({[`/pre-path/{${paramName}}/post-path`]: {GET: (i) => {
 			parsedInput = i;
 

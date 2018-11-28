@@ -35,7 +35,7 @@ const notFoundResponse = {
 /**
  * A factory class for creating a handler for a api with several endpoints.
  */
-export class AwsLambdaApiMultiEndpointHandlerFactory {
+export class AwsLambdaProxyApiHandlerFactory {
 
 	private static getParamsNamesFromPath(path: string) {
 		const paramNamesRegExp = /[^{]*\{(.*?)\}/y;
@@ -66,9 +66,9 @@ export class AwsLambdaApiMultiEndpointHandlerFactory {
 		for (const endpointPath of Object.keys(endpoints)) {
 			endpointsConfig.push({
 				handlers: endpoints[endpointPath],
-				paramsNames: AwsLambdaApiMultiEndpointHandlerFactory.getParamsNamesFromPath(endpointPath),
+				paramsNames: AwsLambdaProxyApiHandlerFactory.getParamsNamesFromPath(endpointPath),
 				path: endpointPath,
-				regExp: AwsLambdaApiMultiEndpointHandlerFactory.getTestRegExpFromPath(endpointPath),
+				regExp: AwsLambdaProxyApiHandlerFactory.getTestRegExpFromPath(endpointPath),
 			});
 		}
 
@@ -82,14 +82,14 @@ export class AwsLambdaApiMultiEndpointHandlerFactory {
 	) {}
 
 	public build(endpoints: IEndpoints): LambdaHandler<IApiInput, IApiOutput> {
-		this.endpointsConfig = AwsLambdaApiMultiEndpointHandlerFactory.composeEndpointsConfig(endpoints);
+		this.endpointsConfig = AwsLambdaProxyApiHandlerFactory.composeEndpointsConfig(endpoints);
 
 		return this.apiHandlerFactory.build(async (event, ctx) => {
 			const handlerConfig = this.getHandlerConfigFromInput(event);
 			if (handlerConfig === undefined) {
 				return notFoundResponse;
 			}
-			const handler = AwsLambdaApiMultiEndpointHandlerFactory.getHandlerFromInput(event, handlerConfig);
+			const handler = AwsLambdaProxyApiHandlerFactory.getHandlerFromInput(event, handlerConfig);
 			const parsedEvent = this.composeEvent(event, handlerConfig);
 			if (handler === undefined) {
 				return notFoundResponse;
