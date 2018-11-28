@@ -1,7 +1,7 @@
 import {expect} from "chai";
 import {beforeEach, describe} from "mocha";
 import {FakeSqs} from "../../helpers/fake-sqs.class";
-import {AwsLambdaHandlerFactory} from "../aws-lambda-handler-factory.class";
+import {AwsLambdaHandlerFactory} from "../handler-factory.class";
 import {SqsFifoConsumerHandlerFactory} from "./sqs-fifo-consumer-handler-factory.class";
 
 describe("Having a sqs fifo consumer handler factory", () => {

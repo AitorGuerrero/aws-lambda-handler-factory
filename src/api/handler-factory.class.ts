@@ -1,8 +1,9 @@
 import {EventEmitter} from "events";
-import {AwsLambdaHandlerFactory, LambdaHandler} from "../aws-lambda-handler-factory.class";
 import {IContext} from "../context-interface";
+import {HandlerCustomError} from "../handler-custom-error.class";
+import {AwsLambdaHandlerFactory, LambdaHandler} from "../handler-factory.class";
 import {IApiInput} from "./api-input.interface";
-import ApiRequestError from "./api-request-error.class";
+import {ApiRequestError} from "./api-request-error.class";
 import {IAwsLambdaApiHandlerFactory} from "./handler-factory.interface";
 import {IApiOutput} from "./output.interface";
 
@@ -64,7 +65,7 @@ export class AwsLambdaApiHandlerFactory implements IAwsLambdaApiHandlerFactory {
 			} catch (err) {
 				await this.callbacks.onError(err);
 				await this.eventEmitter.emit("error", err);
-				return (err instanceof ApiRequestError)
+				throw (err instanceof ApiRequestError)
 					? this.buildErrorResponse(err)
 					: this.buildServerErrorResponse();
 			}
@@ -81,39 +82,42 @@ export class AwsLambdaApiHandlerFactory implements IAwsLambdaApiHandlerFactory {
 				body: response.body === undefined ? ""
 					: typeof response.body === "string" ? response.body
 						: JSON.stringify(response.body),
-				headers: Object.assign({
-					"Access-Control-Allow-Credentials": this.corsConfig.allowCredentials,
-					"Access-Control-Allow-Origin": this.corsConfig.allowedOrigin,
-				}, response.headers !== undefined ? response.headers : {}),
+				headers: this.makeHeaders(response.headers),
 			},
 		);
 	}
 
 	private buildServerErrorResponse() {
-		return {
+		return new HandlerCustomError({
 			body: JSON.stringify({
 				error: { code: "system-error" },
 				success: false,
 			}),
-			headers: {
-				"Access-Control-Allow-Credentials": this.corsConfig.allowCredentials,
-				"Access-Control-Allow-Origin": this.corsConfig.allowedOrigin,
-			},
+			headers: this.makeHeaders(),
 			statusCode: 500,
-		};
+		});
 	}
 
 	private buildErrorResponse(err: ApiRequestError) {
-		return {
+		return new HandlerCustomError({
 			body: JSON.stringify({
 				error: { code: err.name },
 				success: false,
 			}),
-			headers: {
-				"Access-Control-Allow-Credentials": this.corsConfig.allowCredentials,
-				"Access-Control-Allow-Origin": this.corsConfig.allowedOrigin,
-			},
+			headers: this.makeHeaders(),
 			statusCode: err.statusCode,
-		};
+		});
+	}
+
+	private makeHeaders(inputHeaders?: {[key: string]: string | boolean | number | null}) {
+		const headers: {[key: string]: string | boolean | number | null} = {};
+		if (this.corsConfig.allowCredentials) {
+			headers["Access-Control-Allow-Credentials"] = this.corsConfig.allowCredentials;
+		}
+		if (this.corsConfig.allowedOrigin) {
+			headers["Access-Control-Allow-Origin"] = this.corsConfig.allowedOrigin;
+		}
+
+		return Object.assign(headers, inputHeaders || {});
 	}
 }

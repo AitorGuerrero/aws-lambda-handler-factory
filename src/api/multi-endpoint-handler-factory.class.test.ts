@@ -1,8 +1,8 @@
 /* tslint:disable:no-unused-expression */
 import {expect} from "chai";
 import {beforeEach, describe} from "mocha";
-import {AwsLambdaHandlerFactory, LambdaHandler} from "../aws-lambda-handler-factory.class";
 import {IContext} from "../context-interface";
+import {AwsLambdaHandlerFactory, LambdaHandler} from "../handler-factory.class";
 import {IApiInput} from "./api-input.interface";
 import {AwsLambdaApiHandlerFactory} from "./handler-factory.class";
 import {AwsLambdaApiMultiEndpointHandlerFactory} from "./multi-endpoint-handler-factory.class";

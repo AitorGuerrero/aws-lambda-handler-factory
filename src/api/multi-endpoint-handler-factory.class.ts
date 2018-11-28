@@ -1,4 +1,4 @@
-import {LambdaHandler} from "../aws-lambda-handler-factory.class";
+import {LambdaHandler} from "../handler-factory.class";
 import {IApiInput} from "./api-input.interface";
 import {ApiHandler, AwsLambdaApiHandlerFactory} from "./handler-factory.class";
 import {IApiOutput} from "./output.interface";

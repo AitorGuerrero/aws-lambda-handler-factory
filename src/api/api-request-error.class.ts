@@ -1,4 +1,4 @@
-export default class ApiRequestError extends Error {
+export class ApiRequestError extends Error {
 
 	protected _statusCode: number;
 

@@ -1,13 +1,13 @@
 import {SQS} from "aws-sdk";
 import {expect} from "chai";
 import {FakeSqs} from "../../helpers/fake-sqs.class";
-import {AwsLambdaHandlerFactory} from "../aws-lambda-handler-factory.class";
+import {AwsLambdaHandlerFactory} from "../handler-factory.class";
 import {SqsConsumerHandlerFactory} from "./sqs-consumer-handler-factory.class";
 
 describe("Having a sqs consumer", () => {
 
 	const queueName = "queueName";
-	const ctx = {getRemainingTimeInMillis: () => Infinity};
+	const ctx = {getRemainingTimeInMillis: () => 100};
 
 	let factory: SqsConsumerHandlerFactory;
 	let factoryBase: AwsLambdaHandlerFactory;

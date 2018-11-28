@@ -1,6 +1,6 @@
 import {SQS} from "aws-sdk";
-import {AwsLambdaHandlerFactory, handlerEventType} from "../aws-lambda-handler-factory.class";
 import {IContext} from "../context-interface";
+import {AwsLambdaHandlerFactory, handlerEventType} from "../handler-factory.class";
 
 export class SqsFifoConsumerHandlerFactory<Message> {
 

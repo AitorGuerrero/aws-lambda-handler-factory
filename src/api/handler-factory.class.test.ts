@@ -1,6 +1,7 @@
+/* tslint:disable */
 import {expect} from "chai";
 import {beforeEach, describe} from "mocha";
-import {AwsLambdaHandlerFactory, LambdaHandler} from "../aws-lambda-handler-factory.class";
+import {AwsLambdaHandlerFactory, handlerEventType, LambdaHandler} from "../handler-factory.class";
 import {IContext} from "../context-interface";
 import {AwsLambdaApiHandlerFactory} from "./handler-factory.class";
 
@@ -11,7 +12,9 @@ describe("Having a api handler factory", () => {
 	const ctx = {getRemainingTimeInMillis: () => 0} as IContext;
 	beforeEach(() => {
 		factory = new AwsLambdaHandlerFactory();
+		factory.eventEmitter.on('error', () => null);
 		apiFactory = new AwsLambdaApiHandlerFactory(factory);
+		apiFactory.eventEmitter.on('error', () => null);
 	});
 	describe("and a simple handler defined", () => {
 		beforeEach(() => handler = apiFactory.build(async () => ({})));
@@ -48,18 +51,30 @@ describe("Having a api handler factory", () => {
 		it("should await for onError callback", async () => {
 			let onErrorCalled = false;
 			apiFactory.callbacks.onError = () => onErrorCalled = true;
-			await asyncHandler(handler)(null, ctx);
+			try {await asyncHandler(handler)(null, ctx);}
+			catch (err) {}
 			expect(onErrorCalled).to.be.equal(true);
 		});
 		it("should return server error",  async () => {
-			const response = await asyncHandler(handler)(null, ctx);
+			let response: any;
+			try {response = await asyncHandler(handler)(null, ctx);}
+			catch (err) {}
 			expect(response.statusCode).to.be.equal(500);
 		});
 		it("should emit error event", async () => {
 			let emittedEvent: Error = null;
 			apiFactory.eventEmitter.on("error", (e) => emittedEvent = e);
-			await asyncHandler(handler)(null, ctx);
+			try {await asyncHandler(handler)(null, ctx);}
+			catch (err) {}
 			expect(emittedEvent).to.be.equal(error);
+		});
+		it("should not emit handler factory 'on success' event", async () => {
+			let called = false;
+			factory.eventEmitter.on(handlerEventType.succeeded, () => called = true);
+			try {
+				await asyncHandler(handler)(null, ctx);
+			} catch (e) {}
+			expect(called).to.be.false;
 		});
 	});
 });

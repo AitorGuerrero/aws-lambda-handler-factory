@@ -1,7 +1,7 @@
 import {expect} from "chai";
 import {beforeEach, describe} from "mocha";
-import {AwsLambdaHandlerFactory, LambdaHandler} from "../aws-lambda-handler-factory.class";
 import {IContext} from "../context-interface";
+import {AwsLambdaHandlerFactory, LambdaHandler} from "../handler-factory.class";
 import {AwsLambdaApiHandlerFactory} from "./handler-factory.class";
 import {IAwsLambdaApiHandlerFactory} from "./handler-factory.interface";
 import {HeadersDecorator} from "./headers.decorator";
