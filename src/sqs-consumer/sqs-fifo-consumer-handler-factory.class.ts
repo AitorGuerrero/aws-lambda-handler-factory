@@ -5,15 +5,15 @@ import {AwsLambdaHandlerFactory, handlerEventType} from "../handler-factory.clas
 export class SqsFifoConsumerHandlerFactory<Message> {
 
 	public readonly callbacks: {
-		onInitBatchProcess: () => any
-		onMessageConsumptionError: (e: Error, m: SQS.Message) => any,
-		onBatchProcessed(batch: SQS.Message[]): any
-		onConsumingMessage(m: Message): any,
+		onInitBatchProcess: Array<() => unknown>,
+		onMessageConsumptionError: Array<(e: Error, m: SQS.Message) => unknown>,
+		onBatchProcessed: Array<(batch: SQS.Message[]) => unknown>,
+		onConsumingMessage: Array<(m: Message) => unknown>,
 	} = {
-		onBatchProcessed: () => Promise.resolve(),
-		onConsumingMessage: () => Promise.resolve(),
-		onInitBatchProcess: () => Promise.resolve(),
-		onMessageConsumptionError: () => Promise.resolve(),
+		onBatchProcessed: [],
+		onConsumingMessage: [],
+		onInitBatchProcess: [],
+		onMessageConsumptionError: [],
 	};
 
 	private currentMessage: SQS.Message;
@@ -40,12 +40,12 @@ export class SqsFifoConsumerHandlerFactory<Message> {
 			this.processedMessages = [];
 			await this.loadBatch();
 			while (!this.timedOut && this.messagesBatch.length !== 0) {
-				await this.callbacks.onInitBatchProcess();
+				await Promise.all(this.callbacks.onInitBatchProcess.map((cb) => cb()));
 				while (!this.timedOut && this.messagesBatch.length !== 0) {
 					try {
 						await processMessages(async () => this.nextMessage(), ctx);
 					} catch (err) {
-						await this.callbacks.onMessageConsumptionError(err, this.currentMessage);
+						await Promise.all(this.callbacks.onMessageConsumptionError.map((cb) => cb(err, this.currentMessage)));
 						await this.tryExecutingMessagesToFailedMessage(ctx, processMessages);
 					}
 					if (this.currentMessage) {
@@ -53,7 +53,7 @@ export class SqsFifoConsumerHandlerFactory<Message> {
 						this.currentMessage = undefined;
 					}
 				}
-				await this.callbacks.onBatchProcessed(this.processedMessages);
+				await Promise.all(this.callbacks.onBatchProcessed.map((cb) => cb(this.processedMessages)));
 				await this.deleteProcessedMessages();
 				await this.loadBatch();
 			}
@@ -84,7 +84,7 @@ export class SqsFifoConsumerHandlerFactory<Message> {
 			return;
 		}
 		event = JSON.parse(this.currentMessage.Body);
-		await this.callbacks.onConsumingMessage(event);
+		await Promise.all(this.callbacks.onConsumingMessage.map((cb) => cb(event)));
 
 		return event;
 	}
