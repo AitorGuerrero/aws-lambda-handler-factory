@@ -34,9 +34,9 @@ export class AwsLambdaApiHandlerFactory implements IAwsLambdaApiHandlerFactory {
 	 * }
 	 */
 	public readonly callbacks: {
-		onError: (err: Error) => any;
+		onError: Array<(err: Error) => (Promise<any> | any)>;
 	} = {
-		onError: () => Promise.resolve(),
+		onError: [],
 	};
 
 	private corsConfig: {
@@ -63,7 +63,7 @@ export class AwsLambdaApiHandlerFactory implements IAwsLambdaApiHandlerFactory {
 			try {
 				return this.composeResponse(await apiHandler(input, ctx));
 			} catch (err) {
-				await this.callbacks.onError(err);
+				await Promise.all(this.callbacks.onError.map((cb) => cb(err)));
 				await this.eventEmitter.emit("error", err);
 				throw (err instanceof ApiRequestError)
 					? this.buildErrorResponse(err)

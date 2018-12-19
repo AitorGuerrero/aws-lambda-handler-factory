@@ -10,7 +10,7 @@ import {IApiOutput} from "./output.interface";
 export interface IAwsLambdaApiHandlerFactory {
 	readonly eventEmitter: EventEmitter;
 	readonly callbacks: {
-		onError: (err: Error) => any;
+		onError: Array<(err: Error) => (Promise<any> | any)>;
 	};
 	build(apiHandler: ApiHandler): LambdaHandler<IApiInput, IApiOutput>;
 }
