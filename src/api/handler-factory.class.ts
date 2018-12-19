@@ -1,9 +1,9 @@
 import {EventEmitter} from "events";
 import {IContext} from "../context-interface";
-import {HandlerCustomError} from "../handler-custom-error.class";
+import {HandlerCustomError} from "../error.handler-custom.class";
 import {AwsLambdaHandlerFactory, LambdaHandler} from "../handler-factory.class";
 import {IApiInput} from "./api-input.interface";
-import {ApiRequestError} from "./api-request-error.class";
+import {ApiRequestError} from "./error.api-request.class";
 import {IAwsLambdaApiHandlerFactory} from "./handler-factory.interface";
 import {IApiOutput} from "./output.interface";
 

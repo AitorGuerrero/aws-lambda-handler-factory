@@ -1,6 +1,6 @@
 import {EventEmitter} from "events";
 import {IContext} from "./context-interface";
-import {HandlerCustomError} from "./handler-custom-error.class";
+import {HandlerCustomError} from "./error.handler-custom.class";
 
 export type LambdaHandler<Input, Output> = (input: Input, ctx: IContext, cb: (error?: Error, data?: Output) => unknown)
 	=> unknown;
