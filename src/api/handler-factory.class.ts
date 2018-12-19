@@ -24,14 +24,14 @@ export class AwsLambdaApiHandlerFactory implements IAwsLambdaApiHandlerFactory {
 
 	/**
 	 * Functions executed in some execution points.
-	 * They can be overwritten, and admits async functions. If you overwrite them, remember to call the original
+	 * - To add some action, push the callback function to the array
+	 * - admits async functions.
 	 * function.
 	 * e.g:
 	 * const originalOnError = handlerFactory.callbacks.onError;
-	 * handlerFactory.callbacks.onInit = async (input, ctx) => {
+	 * handlerFactory.callbacks.onInit.push(async (input, ctx) => {
 	 *     // Your stuff
-	 *     await onError(input, ctx);
-	 * }
+	 * });
 	 */
 	public readonly callbacks: {
 		onError: Array<(err: Error) => (Promise<any> | any)>;
