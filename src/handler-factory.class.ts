@@ -14,6 +14,7 @@ export enum handlerEventType {
 	error = "error",
 	finished = "finished",
 	timeOut = "timeOut",
+	persisted = "persisted",
 }
 
 /**
@@ -55,13 +56,15 @@ export class AwsLambdaHandlerFactory {
 	 * }
 	 */
 	public readonly callbacks: {
-		onInit: Array<(input: unknown, ctx: IContext) => (Promise<unknown> | unknown)>;
-		onSucceeded: Array<(response: unknown) => (Promise<unknown> | unknown)>;
-		onError: Array<(err: Error) => (Promise<unknown> | unknown)>;
+		flush: Array<(response: unknown) => (Promise<unknown> | unknown)>;
+		handleError: Array<(err: Error) => (Promise<unknown> | unknown)>;
+		initialize: Array<(input: unknown, ctx: IContext) => (Promise<unknown> | unknown)>;
+		persist: Array<(response: unknown) => (Promise<unknown> | unknown)>;
 	} = {
-		onError: [],
-		onInit: [],
-		onSucceeded: [],
+		flush: [],
+		handleError: [],
+		initialize: [],
+		persist: [],
 	};
 
 	/**
@@ -78,13 +81,15 @@ export class AwsLambdaHandlerFactory {
 	 */
 	public build<I, O>(handler: (event: I, ctx: IContext) => Promise<O> | O): LambdaHandler<I, O> {
 		return async (input, ctx, cb) => {
-			await Promise.all(this.callbacks.onInit.map((c) => c(input, ctx)));
+			await Promise.all(this.callbacks.initialize.map((c) => c(input, ctx)));
 			this.eventEmitter.emit(handlerEventType.called, input, ctx);
 			this.controlTimeOut(ctx);
 			try {
 				const response = await handler(input, ctx);
-				await Promise.all(this.callbacks.onSucceeded.map((c) => c(response)));
+				await Promise.all(this.callbacks.persist.map((c) => c(response)));
+				this.eventEmitter.emit(handlerEventType.persisted, response);
 				cb(null, response);
+				await Promise.all(this.callbacks.flush.map((c) => c(response)));
 				this.eventEmitter.emit(handlerEventType.succeeded, response);
 			} catch (err) {
 				if (err instanceof HandlerCustomError) {
@@ -92,7 +97,7 @@ export class AwsLambdaHandlerFactory {
 				} else {
 					cb(err);
 				}
-				await Promise.all(this.callbacks.onError.map((c) => c(err)));
+				await Promise.all(this.callbacks.handleError.map((c) => c(err)));
 				this.eventEmitter.emit(handlerEventType.error, err);
 			}
 			this.eventEmitter.emit(handlerEventType.finished);
