@@ -50,7 +50,7 @@ describe("Having a api handler factory", () => {
 		});
 		it("should await for onError callback", async () => {
 			let onErrorCalled = false;
-			apiFactory.callbacks.onError = () => onErrorCalled = true;
+			apiFactory.callbacks.onError.push(() => onErrorCalled = true);
 			try {await asyncHandler(handler)(null, ctx);}
 			catch (err) {}
 			expect(onErrorCalled).to.be.equal(true);

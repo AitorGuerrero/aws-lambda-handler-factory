@@ -67,7 +67,7 @@ export class SqsFifoConsumerHandlerFactory<Message> {
 		this.messagesBatch = this.processedMessages;
 		this.processedMessages = [];
 		this.currentMessage = undefined;
-		await Promise.all(this.handlerFactory.callbacks.onInit.map((c) => c(null, ctx)));
+		await Promise.all(this.handlerFactory.callbacks.initialize.map((c) => c(null, ctx)));
 		await processMessages(async () => this.nextMessage(), this.ctx);
 	}
 
