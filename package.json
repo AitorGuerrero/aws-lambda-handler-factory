@@ -10,9 +10,6 @@
   },
   "author": "Aitor Guerrero <aitor.guerrero.dev@gmail.com>",
   "license": "ISC",
-  "hooks": {
-    "pre-commit": "npm run build && npm run style && npm run test"
-  },
   "devDependencies": {
     "@types/chai": "^4.1.7",
     "@types/mocha": "^5.2.5",
@@ -24,5 +21,10 @@
     "nyc": "^13.1.0",
     "tslint": "^5.11.0",
     "typescript": "^3.2.2"
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "npm run build && npm run style && npm run test"
+    }
   }
 }
