@@ -29,11 +29,11 @@ describe("Having a proxy api handler factory", () => {
 		apiFactory = new AwsLambdaApiHandlerFactory(factory);
 		output = {};
 		multiEndpointFactory = new AwsLambdaProxyApiHandlerFactory(apiFactory);
-		handle = multiEndpointFactory.build({[`/pre-path/{${paramName}}/post-path`]: {GET: (i) => {
+		handle = multiEndpointFactory.build(baseMapping, {[`/pre-path/{${paramName}}/post-path`]: {GET: (i) => {
 			parsedInput = i;
 
 			return output;
-		}}}, baseMapping);
+		}}});
 		input = {
 			httpMethod,
 			path: `${baseMapping}/pre-path/${paramValue}/post-path`,

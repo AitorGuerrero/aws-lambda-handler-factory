@@ -87,10 +87,17 @@ export class AwsLambdaProxyApiHandlerFactory {
 		private apiHandlerFactory: AwsLambdaApiHandlerFactory,
 	) {}
 
-	public build(
-		endpoints: IEndpoints,
-		basePathMapping?: string,
-	): LambdaHandler<IApiInput, IApiOutput> {
+	public build(basePathMapping: string, endpoints: IEndpoints): LambdaHandler<IApiInput, IApiOutput>;
+	public build(endpoints: IEndpoints): LambdaHandler<IApiInput, IApiOutput>;
+	public build(a: string | IEndpoints, b?: IEndpoints): LambdaHandler<IApiInput, IApiOutput> {
+		let basePathMapping: string;
+		let endpoints: IEndpoints;
+		if (typeof a === "string") {
+			endpoints = b;
+			basePathMapping = a;
+		} else {
+			endpoints = a;
+		}
 		this.endpointsConfig = AwsLambdaProxyApiHandlerFactory.composeEndpointsConfig(endpoints, basePathMapping);
 
 		return this.apiHandlerFactory.build(async (event, ctx) => {
