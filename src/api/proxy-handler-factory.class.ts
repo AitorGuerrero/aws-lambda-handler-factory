@@ -16,7 +16,8 @@ export interface IEndpoints {
 
 interface IEndpointConfig {
 	path: string;
-	regExp: RegExp;
+	testRegExp: RegExp;
+	paramsRegExp: RegExp;
 	paramsNames: string[];
 	handlers: {
 		GET?: ApiHandler;
@@ -49,7 +50,11 @@ export class AwsLambdaProxyApiHandlerFactory {
 	}
 
 	private static getTestRegExpFromPath(path: string) {
-		return new RegExp("^" + path.replace(/{.*?}/g, "([^/]*)") + "$");
+		return new RegExp(`^${path.replace(/{.*?}/g, "[^/]*")}$`);
+	}
+
+	private static getParamsRegExpFromPath(path: string, basePath: string) {
+		return new RegExp(`^${basePath}${path.replace(/{.*?}/g, "([^/]*)")}$`);
 	}
 
 	private static getHandlerFromInput(input: IApiInput, config: IEndpointConfig) {
@@ -60,15 +65,16 @@ export class AwsLambdaProxyApiHandlerFactory {
 		return config.handlers[input.httpMethod];
 	}
 
-	private static composeEndpointsConfig(endpoints: IEndpoints) {
+	private static composeEndpointsConfig(endpoints: IEndpoints, basePathMapping?: string) {
 		const endpointsConfig: IEndpointConfig[] = [];
 
 		for (const endpointPath of Object.keys(endpoints)) {
 			endpointsConfig.push({
 				handlers: endpoints[endpointPath],
 				paramsNames: AwsLambdaProxyApiHandlerFactory.getParamsNamesFromPath(endpointPath),
+				paramsRegExp: AwsLambdaProxyApiHandlerFactory.getParamsRegExpFromPath(endpointPath, basePathMapping || ""),
 				path: endpointPath,
-				regExp: AwsLambdaProxyApiHandlerFactory.getTestRegExpFromPath(endpointPath),
+				testRegExp: AwsLambdaProxyApiHandlerFactory.getTestRegExpFromPath(endpointPath),
 			});
 		}
 
@@ -81,8 +87,11 @@ export class AwsLambdaProxyApiHandlerFactory {
 		private apiHandlerFactory: AwsLambdaApiHandlerFactory,
 	) {}
 
-	public build(endpoints: IEndpoints): LambdaHandler<IApiInput, IApiOutput> {
-		this.endpointsConfig = AwsLambdaProxyApiHandlerFactory.composeEndpointsConfig(endpoints);
+	public build(
+		endpoints: IEndpoints,
+		basePathMapping?: string,
+	): LambdaHandler<IApiInput, IApiOutput> {
+		this.endpointsConfig = AwsLambdaProxyApiHandlerFactory.composeEndpointsConfig(endpoints, basePathMapping);
 
 		return this.apiHandlerFactory.build(async (event, ctx) => {
 			const handlerConfig = this.getHandlerConfigFromInput(event);
@@ -106,12 +115,11 @@ export class AwsLambdaProxyApiHandlerFactory {
 	}
 
 	private getHandlerConfigFromInput(input: IApiInput) {
-		return this.endpointsConfig.find((o) => o.regExp.test(input.path));
+		return this.endpointsConfig.find((o) => o.testRegExp.test(input.resource));
 	}
 
 	private composeEvent(originalEvent: IApiInput, handlerConfig: IEndpointConfig) {
-		const paramsValues = handlerConfig.regExp.exec(originalEvent.path);
-
+		const paramsValues = handlerConfig.paramsRegExp.exec(originalEvent.path);
 		return Object.assign({}, originalEvent, {
 			path: handlerConfig.path,
 			pathParameters: handlerConfig.paramsNames

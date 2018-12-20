@@ -14,6 +14,7 @@ describe("Having a proxy api handler factory", () => {
 	const httpMethod = "GET";
 	const paramName = "param";
 	const paramValue = "paramValue";
+	const baseMapping = "/baseMapping";
 
 	let factory: AwsLambdaHandlerFactory;
 	let apiFactory: AwsLambdaApiHandlerFactory;
@@ -32,10 +33,11 @@ describe("Having a proxy api handler factory", () => {
 			parsedInput = i;
 
 			return output;
-		}}});
+		}}}, baseMapping);
 		input = {
 			httpMethod,
-			path: `/pre-path/${paramValue}/post-path`,
+			path: `${baseMapping}/pre-path/${paramValue}/post-path`,
+			resource: `/pre-path/${paramName}/post-path`,
 		} as IApiInput;
 	});
 	it("should call the correct endpoint", async () => {
@@ -62,7 +64,7 @@ describe("Having a proxy api handler factory", () => {
 		});
 	});
 	describe("and the called endpoint does'nt exist", () => {
-		beforeEach(() => input.path = "NotFoundPath");
+		beforeEach(() => input.resource = "NotFoundPath");
 		it("should return not found", async () => {
 			const response = await asyncHandler(handle)(input, ctx);
 			expect(response.statusCode).to.be.equal(404);
