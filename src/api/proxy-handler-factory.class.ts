@@ -49,8 +49,8 @@ export class AwsLambdaProxyApiHandlerFactory {
 		return paramsNames;
 	}
 
-	private static getTestRegExpFromPath(path: string) {
-		return new RegExp(`^${path.replace(/{.*?}/g, "[^/]*")}$`);
+	private static getTestRegExpFromPath(path: string, basePath: string) {
+		return new RegExp(`^${basePath}${path.replace(/{.*?}/g, "[^/]*")}$`);
 	}
 
 	private static getParamsRegExpFromPath(path: string, basePath: string) {
@@ -74,7 +74,7 @@ export class AwsLambdaProxyApiHandlerFactory {
 				paramsNames: AwsLambdaProxyApiHandlerFactory.getParamsNamesFromPath(endpointPath),
 				paramsRegExp: AwsLambdaProxyApiHandlerFactory.getParamsRegExpFromPath(endpointPath, basePathMapping || ""),
 				path: endpointPath,
-				testRegExp: AwsLambdaProxyApiHandlerFactory.getTestRegExpFromPath(endpointPath),
+				testRegExp: AwsLambdaProxyApiHandlerFactory.getTestRegExpFromPath(endpointPath, basePathMapping || ""),
 			});
 		}
 
@@ -122,7 +122,7 @@ export class AwsLambdaProxyApiHandlerFactory {
 	}
 
 	private getHandlerConfigFromInput(input: IApiInput) {
-		return this.endpointsConfig.find((o) => o.testRegExp.test(input.resource));
+		return this.endpointsConfig.find((o) => o.testRegExp.test(input.path));
 	}
 
 	private composeEvent(originalEvent: IApiInput, handlerConfig: IEndpointConfig) {
