@@ -67,7 +67,7 @@ export class AwsLambdaApiHandlerFactory implements IAwsLambdaApiHandlerFactory {
 				await this.eventEmitter.emit("error", err);
 				throw (err instanceof ApiRequestError)
 					? this.buildErrorResponse(err)
-					: this.buildServerErrorResponse();
+					: this.buildServerErrorResponse(err);
 			}
 		});
 	}
@@ -87,7 +87,7 @@ export class AwsLambdaApiHandlerFactory implements IAwsLambdaApiHandlerFactory {
 		);
 	}
 
-	private buildServerErrorResponse() {
+	private buildServerErrorResponse(err: Error) {
 		return new HandlerCustomError({
 			body: JSON.stringify({
 				error: { code: "system-error" },
@@ -95,7 +95,7 @@ export class AwsLambdaApiHandlerFactory implements IAwsLambdaApiHandlerFactory {
 			}),
 			headers: this.makeHeaders(),
 			statusCode: 500,
-		});
+		}, err);
 	}
 
 	private buildErrorResponse(err: ApiRequestError) {
@@ -106,7 +106,7 @@ export class AwsLambdaApiHandlerFactory implements IAwsLambdaApiHandlerFactory {
 			}),
 			headers: this.makeHeaders(),
 			statusCode: err.statusCode,
-		});
+		}, err);
 	}
 
 	private makeHeaders(inputHeaders?: {[key: string]: string | boolean | number | null}) {
