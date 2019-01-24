@@ -1,18 +1,8 @@
 import {LambdaHandler} from "../handler-factory.class";
 import {IApiInput} from "./api-input.interface";
+import IEndpointsMap from "./endpoints-map.interface";
 import {ApiHandler, AwsLambdaApiHandlerFactory} from "./handler-factory.class";
 import {IApiOutput} from "./output.interface";
-
-interface IResourceEndpoints {
-	GET?: ApiHandler;
-	PUT?: ApiHandler;
-	POST?: ApiHandler;
-	DELETE?: ApiHandler;
-}
-
-export interface IEndpoints {
-	[route: string]: IResourceEndpoints;
-}
 
 interface IEndpointConfig {
 	path: string;
@@ -26,12 +16,6 @@ interface IEndpointConfig {
 		DELETE?: ApiHandler;
 	};
 }
-
-const notFoundResponse = {
-	body: "",
-	headers: {},
-	statusCode: 404,
-};
 
 /**
  * A factory class for creating a handler for a api with several endpoints.
@@ -65,7 +49,7 @@ export class AwsLambdaProxyApiHandlerFactory {
 		return config.handlers[input.httpMethod];
 	}
 
-	private static composeEndpointsConfig(endpoints: IEndpoints, basePathMapping?: string) {
+	private static composeEndpointsConfig(endpoints: IEndpointsMap, basePathMapping?: string) {
 		const endpointsConfig: IEndpointConfig[] = [];
 
 		for (const endpointPath of Object.keys(endpoints)) {
@@ -87,11 +71,11 @@ export class AwsLambdaProxyApiHandlerFactory {
 		private apiHandlerFactory: AwsLambdaApiHandlerFactory,
 	) {}
 
-	public build(basePathMapping: string, endpoints: IEndpoints): LambdaHandler<IApiInput, IApiOutput>;
-	public build(endpoints: IEndpoints): LambdaHandler<IApiInput, IApiOutput>;
-	public build(a: string | IEndpoints, b?: IEndpoints): LambdaHandler<IApiInput, IApiOutput> {
+	public build(basePathMapping: string, endpoints: IEndpointsMap): LambdaHandler<IApiInput, IApiOutput>;
+	public build(endpoints: IEndpointsMap): LambdaHandler<IApiInput, IApiOutput>;
+	public build(a: string | IEndpointsMap, b?: IEndpointsMap): LambdaHandler<IApiInput, IApiOutput> {
 		let basePathMapping: string;
-		let endpoints: IEndpoints;
+		let endpoints: IEndpointsMap;
 		if (typeof a === "string") {
 			endpoints = b;
 			basePathMapping = a;
@@ -103,12 +87,12 @@ export class AwsLambdaProxyApiHandlerFactory {
 		return this.apiHandlerFactory.build(async (event, ctx) => {
 			const handlerConfig = this.getHandlerConfigFromInput(event);
 			if (handlerConfig === undefined) {
-				return notFoundResponse;
+				return {body: "", headers: {}, statusCode: 404};
 			}
 			const handler = AwsLambdaProxyApiHandlerFactory.getHandlerFromInput(event, handlerConfig);
 			const parsedEvent = this.composeEvent(event, handlerConfig);
 			if (handler === undefined) {
-				return notFoundResponse;
+				return {body: "", headers: {}, statusCode: 404};
 			}
 			const response = await handler(parsedEvent, ctx);
 

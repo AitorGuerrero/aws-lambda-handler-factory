@@ -6,3 +6,4 @@ export * from "./handler-factory.interface";
 export * from "./output.interface";
 export * from "./api-input.interface";
 export * from "./proxy-handler-factory.class";
+export * from "./multi-handler-factory.class";
