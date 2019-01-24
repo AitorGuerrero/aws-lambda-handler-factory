@@ -15,7 +15,7 @@ export class AwsLambdaApiMultiHandlerFactory {
 
 	public build(endpoints: IEndpointsMap): LambdaHandler<IApiInput, IApiOutput> {
 		return this.apiHandlerFactory.build(async (event, ctx) => {
-			const handler = endpoints[event.path][event.httpMethod];
+			const handler = endpoints[event.resource][event.httpMethod];
 			if (handler === undefined) {
 				return {
 					body: "",
