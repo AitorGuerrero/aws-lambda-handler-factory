@@ -88,20 +88,22 @@ export class AwsLambdaHandlerFactory {
 				const response = await handler(input, ctx);
 				await Promise.all(this.callbacks.persist.map((c) => c(response)));
 				this.eventEmitter.emit(handlerEventType.persisted, response);
-				cb(null, response);
 				await Promise.all(this.callbacks.flush.map((c) => c(response)));
 				this.eventEmitter.emit(handlerEventType.succeeded, response);
+				this.eventEmitter.emit(handlerEventType.finished);
+				this.clearTimeOutControl();
+				cb(null, response);
 			} catch (err) {
+				await Promise.all(this.callbacks.handleError.map((c) => c(err)));
+				this.eventEmitter.emit(handlerEventType.error, err);
+				this.eventEmitter.emit(handlerEventType.finished);
+				this.clearTimeOutControl();
 				if (err instanceof HandlerCustomError) {
 					cb(null, err.response);
 				} else {
 					cb(err);
 				}
-				await Promise.all(this.callbacks.handleError.map((c) => c(err)));
-				this.eventEmitter.emit(handlerEventType.error, err);
 			}
-			this.eventEmitter.emit(handlerEventType.finished);
-			this.clearTimeOutControl();
 		};
 	}
 
