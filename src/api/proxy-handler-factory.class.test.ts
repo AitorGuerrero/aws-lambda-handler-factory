@@ -64,7 +64,7 @@ describe("Having a proxy api handler factory", () => {
 		});
 	});
 	describe("and the called endpoint does'nt exist", () => {
-		beforeEach(() => input.resource = "NotFoundPath");
+		beforeEach(() => input.path = "NotFoundPath");
 		it("should return not found", async () => {
 			const response = await asyncHandler(handle)(input, ctx);
 			expect(response.statusCode).to.be.equal(404);
