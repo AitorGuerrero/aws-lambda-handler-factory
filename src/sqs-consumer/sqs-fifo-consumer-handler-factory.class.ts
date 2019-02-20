@@ -1,6 +1,6 @@
-import {SQS} from "aws-sdk";
+import {Lambda, SQS} from "aws-sdk";
 import {IContext} from "../context-interface";
-import {AwsLambdaHandlerFactory, handlerEventType} from "../handler-factory.class";
+import {AwsLambdaHandlerFactory} from "../handler-factory.class";
 
 export class SqsFifoConsumerHandlerFactory<Message> {
 
@@ -16,103 +16,65 @@ export class SqsFifoConsumerHandlerFactory<Message> {
 		onMessageConsumptionError: [],
 	};
 
-	private currentMessage: SQS.Message;
 	private processedMessages: SQS.Message[];
-	private messagesBatch: SQS.MessageList;
-	private timedOut: boolean;
 	private ctx: IContext;
 
 	constructor(
 		private queueUrl: string,
 		private sqs: SQS,
+		private lambda: Lambda,
 		private handlerFactory: AwsLambdaHandlerFactory,
 	) {
-		handlerFactory.eventEmitter.on(handlerEventType.timeOut, () => this.timedOut = true);
-		this.processedMessages = [];
+		handlerFactory.callbacks.flush.push(() => this.flush());
+		handlerFactory.callbacks.initialize.push((() => this.processedMessages = []));
 	}
 
 	public build(
-		processMessages: (nextMessage: () => Promise<Message>, ctx: IContext) => Promise<any>,
+		processMessage: (message: Message, ctx: IContext) => Promise<any>,
 	)  {
 		return this.handlerFactory.build(async (e: any, ctx: any) => {
 			this.ctx = ctx;
-			this.timedOut = false;
-			this.processedMessages = [];
-			await this.loadBatch();
-			while (!this.timedOut && this.messagesBatch.length !== 0) {
-				await Promise.all(this.callbacks.onInitBatchProcess.map((cb) => cb()));
-				while (!this.timedOut && this.messagesBatch.length !== 0) {
-					try {
-						await processMessages(async () => this.nextMessage(), ctx);
-					} catch (err) {
-						await Promise.all(this.callbacks.onMessageConsumptionError.map((cb) => cb(err, this.currentMessage)));
-						await this.tryExecutingMessagesToFailedMessage(ctx, processMessages);
-					}
-					if (this.currentMessage) {
-						this.processedMessages.push(this.currentMessage);
-						this.currentMessage = undefined;
-					}
-				}
-				await Promise.all(this.callbacks.onBatchProcessed.map((cb) => cb(this.processedMessages)));
-				await this.deleteProcessedMessages();
-				await this.loadBatch();
+			const messages = await this.loadBatch();
+			for (const message of messages) {
+				await processMessage(JSON.parse(message.Body), ctx);
+				this.processedMessages.push(message);
 			}
 		});
 	}
 
-	private async tryExecutingMessagesToFailedMessage(
-		ctx: IContext,
-		processMessages: (nextMessage: () => Promise<Message>, ctx: IContext) => Promise<any>,
-	) {
-		this.messagesBatch = this.processedMessages;
-		this.processedMessages = [];
-		this.currentMessage = undefined;
-		await Promise.all(this.handlerFactory.callbacks.initialize.map((c) => c(null, ctx)));
-		await processMessages(async () => this.nextMessage(), this.ctx);
-	}
-
-	private async nextMessage() {
-		if (this.timedOut) {
-			return;
-		}
-		let event: Message;
-		if (this.currentMessage) {
-			this.processedMessages.push(this.currentMessage);
-		}
-		this.currentMessage = this.messagesBatch.shift();
-		if (this.currentMessage === undefined) {
-			return;
-		}
-		event = JSON.parse(this.currentMessage.Body);
-		await Promise.all(this.callbacks.onConsumingMessage.map((cb) => cb(event)));
-
-		return event;
-	}
-
 	private async deleteProcessedMessages() {
-		const chunk = 10;
-		for (let i = 0, j = this.processedMessages.length; i < j; i += chunk) {
-			const batch =  this.processedMessages.slice(i, i + chunk);
-			const response = await new Promise<SQS.Types.DeleteMessageBatchResult>((rs, rj) => this.sqs.deleteMessageBatch({
-				Entries: batch.map((b) => ({
-					Id: b.MessageId,
-					ReceiptHandle: b.ReceiptHandle,
-				})),
-				QueueUrl: this.queueUrl,
-			}, (err, data) => err ? rj(err) : rs(data)));
-			if (response.Failed && response.Failed.length > 0) {
-				throw new Error("Error deleting some SQS messages");
-			}
+		const response = await new Promise<SQS.Types.DeleteMessageBatchResult>((rs, rj) => this.sqs.deleteMessageBatch({
+			Entries: this.processedMessages.map((b) => ({
+				Id: b.MessageId,
+				ReceiptHandle: b.ReceiptHandle,
+			})),
+			QueueUrl: this.queueUrl,
+		}, (err, data) => err ? rj(err) : rs(data)));
+		if (response.Failed && response.Failed.length > 0) {
+			throw new Error("Error deleting some SQS messages");
 		}
-		this.processedMessages = [];
 	}
 
 	private async loadBatch() {
 		const response = await new Promise<SQS.ReceiveMessageResult>((rs, rj) => this.sqs.receiveMessage({
-			MaxNumberOfMessages: 10,
 			QueueUrl: this.queueUrl,
 		}, (err, res) => err ? rj(err) : rs(res)));
 
-		return this.messagesBatch = response.Messages !== undefined ? response.Messages : [];
+		return response.Messages !== undefined ? response.Messages : [];
+	}
+
+	private callContinue() {
+		return new Promise((rs, rj) => this.lambda.invokeAsync({
+			FunctionName: this.ctx.functionName,
+			InvokeArgs: "",
+		}, (err) => err ? rj(err) : rs()));
+	}
+
+	private async flush() {
+		if (this.processedMessages.length === 0) {
+			return;
+		}
+		await this.deleteProcessedMessages();
+		await this.callContinue();
 	}
 }
