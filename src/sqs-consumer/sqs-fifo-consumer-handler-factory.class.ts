@@ -33,9 +33,9 @@ export class SqsFifoConsumerHandlerFactory<Message> {
 	public build(
 		processMessage: (message: Message, ctx: IContext) => Promise<any>,
 	)  {
-		return this.handlerFactory.build(async (e: any, ctx: any) => {
+		return this.handlerFactory.build(async (e: {retryMessagesGet?: boolean}, ctx: any) => {
 			this.ctx = ctx;
-			const messages = await this.loadMessages();
+			const messages = await this.loadMessages(e.retryMessagesGet);
 			for (const message of messages) {
 				await processMessage(JSON.parse(message.Body), ctx);
 				this.processedMessages.push(message);
@@ -65,9 +65,9 @@ export class SqsFifoConsumerHandlerFactory<Message> {
 		return response.Messages !== undefined ? response.Messages : [];
 	}
 
-	private async loadMessages() {
+	private async loadMessages(retry = false) {
 		let messages = await this.loadBatch();
-		if (messages.length === 0) {
+		if (retry && messages.length === 0) {
 			await new Promise((rs) => setTimeout(rs, 500));
 			messages = await this.loadBatch();
 		}
@@ -79,6 +79,7 @@ export class SqsFifoConsumerHandlerFactory<Message> {
 		return new Promise((rs, rj) => this.lambda.invoke({
 			FunctionName: this.ctx.functionName,
 			InvocationType: "Event",
+			Payload: JSON.stringify({retryMessagesGet: true}),
 		}, (err) => err ? rj(err) : rs()));
 	}
 
