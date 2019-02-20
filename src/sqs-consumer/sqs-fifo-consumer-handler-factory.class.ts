@@ -35,7 +35,7 @@ export class SqsFifoConsumerHandlerFactory<Message> {
 	)  {
 		return this.handlerFactory.build(async (e: any, ctx: any) => {
 			this.ctx = ctx;
-			const messages = await this.loadBatch();
+			const messages = await this.loadMessages();
 			for (const message of messages) {
 				await processMessage(JSON.parse(message.Body), ctx);
 				this.processedMessages.push(message);
@@ -65,10 +65,20 @@ export class SqsFifoConsumerHandlerFactory<Message> {
 		return response.Messages !== undefined ? response.Messages : [];
 	}
 
+	private async loadMessages() {
+		let messages = await this.loadBatch();
+		if (messages.length === 0) {
+			await new Promise((rs) => setTimeout(rs, 500));
+			messages = await this.loadBatch();
+		}
+
+		return messages;
+	}
+
 	private callContinue() {
-		return new Promise((rs, rj) => this.lambda.invokeAsync({
+		return new Promise((rs, rj) => this.lambda.invoke({
 			FunctionName: this.ctx.functionName,
-			InvokeArgs: "{}",
+			InvocationType: "Event",
 		}, (err) => err ? rj(err) : rs()));
 	}
 
