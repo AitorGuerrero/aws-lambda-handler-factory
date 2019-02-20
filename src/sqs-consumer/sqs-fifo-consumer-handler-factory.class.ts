@@ -24,6 +24,7 @@ export class SqsFifoConsumerHandlerFactory<Message> {
 		private sqs: SQS,
 		private lambda: Lambda,
 		private handlerFactory: AwsLambdaHandlerFactory,
+		private maxNumberOfMessages = 10,
 	) {
 		handlerFactory.callbacks.flush.push(() => this.flush());
 		handlerFactory.callbacks.initialize.push((() => this.processedMessages = []));
@@ -57,6 +58,7 @@ export class SqsFifoConsumerHandlerFactory<Message> {
 
 	private async loadBatch() {
 		const response = await new Promise<SQS.ReceiveMessageResult>((rs, rj) => this.sqs.receiveMessage({
+			MaxNumberOfMessages: this.maxNumberOfMessages,
 			QueueUrl: this.queueUrl,
 		}, (err, res) => err ? rj(err) : rs(res)));
 
