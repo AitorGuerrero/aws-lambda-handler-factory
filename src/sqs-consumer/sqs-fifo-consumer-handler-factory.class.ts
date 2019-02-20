@@ -66,7 +66,7 @@ export class SqsFifoConsumerHandlerFactory<Message> {
 	private callContinue() {
 		return new Promise((rs, rj) => this.lambda.invokeAsync({
 			FunctionName: this.ctx.functionName,
-			InvokeArgs: "",
+			InvokeArgs: "{}",
 		}, (err) => err ? rj(err) : rs()));
 	}
 
