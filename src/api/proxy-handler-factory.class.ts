@@ -2,6 +2,7 @@ import {LambdaHandler} from "../handler-factory.class";
 import {IApiInput} from "./api-input.interface";
 import IEndpointsMap from "./endpoints-map.interface";
 import {ApiHandler, AwsLambdaApiHandlerFactory} from "./handler-factory.class";
+import HttpMethod from "./http-methods.enum";
 import {IApiOutput} from "./output.interface";
 
 interface IEndpointConfig {
@@ -10,11 +11,11 @@ interface IEndpointConfig {
 	paramsRegExp: RegExp;
 	paramsNames: string[];
 	handlers: {
-		GET?: ApiHandler;
-		PATCH?: ApiHandler;
-		PUT?: ApiHandler;
-		POST?: ApiHandler;
-		DELETE?: ApiHandler;
+		[HttpMethod.get]?: ApiHandler;
+		[HttpMethod.patch]?: ApiHandler;
+		[HttpMethod.put]?: ApiHandler;
+		[HttpMethod.post]?: ApiHandler;
+		[HttpMethod.delete]?: ApiHandler;
 	};
 }
 
