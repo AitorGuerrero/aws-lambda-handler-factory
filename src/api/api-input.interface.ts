@@ -1,9 +1,11 @@
+import HttpMethod from "./http-methods.enum";
+
 export interface IApiInput {
 	body: string;
 	headers: {
 		[key: string]: string;
 	};
-	httpMethod: "GET" | "POST" | "PUT" | "DELETE";
+	httpMethod: HttpMethod;
 	isBase64Encoded: boolean;
 	path: string;
 	pathParameters: {

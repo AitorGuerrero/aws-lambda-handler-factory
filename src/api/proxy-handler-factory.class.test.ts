@@ -5,6 +5,7 @@ import {IContext} from "../context-interface";
 import {AwsLambdaHandlerFactory, LambdaHandler} from "../handler-factory.class";
 import {IApiInput} from "./api-input.interface";
 import {AwsLambdaApiHandlerFactory} from "./handler-factory.class";
+import HttpMethod from "./http-methods.enum";
 import {IApiOutput} from "./output.interface";
 import {AwsLambdaProxyApiHandlerFactory} from "./proxy-handler-factory.class";
 
@@ -71,7 +72,7 @@ describe("Having a proxy api handler factory", () => {
 		});
 	});
 	describe("and the called method does'nt exist", () => {
-		beforeEach(() => input.httpMethod = "DELETE");
+		beforeEach(() => input.httpMethod = HttpMethod.delete);
 		it("should return not found", async () => {
 			const response = await asyncHandler(handle)(input, ctx);
 			expect(response.statusCode).to.be.equal(404);

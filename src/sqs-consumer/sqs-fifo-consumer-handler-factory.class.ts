@@ -5,14 +5,10 @@ import {AwsLambdaHandlerFactory} from "../handler-factory.class";
 export class SqsFifoConsumerHandlerFactory<Message> {
 
 	public readonly callbacks: {
-		onInitBatchProcess: Array<() => unknown>,
 		onMessageConsumptionError: Array<(e: Error, m: SQS.Message) => unknown>,
-		onBatchProcessed: Array<(batch: SQS.Message[]) => unknown>,
 		onConsumingMessage: Array<(m: Message) => unknown>,
 	} = {
-		onBatchProcessed: [],
 		onConsumingMessage: [],
-		onInitBatchProcess: [],
 		onMessageConsumptionError: [],
 	};
 
@@ -37,8 +33,16 @@ export class SqsFifoConsumerHandlerFactory<Message> {
 			this.ctx = ctx;
 			const messages = await this.loadMessages(e.retryMessagesGet);
 			for (const message of messages) {
-				await processMessage(JSON.parse(message.Body), ctx);
-				this.processedMessages.push(message);
+				try {
+					const unmarshaledMessage = JSON.parse(message.Body);
+					await this.callbacks.onConsumingMessage.map((cb) => cb(unmarshaledMessage));
+					await processMessage(unmarshaledMessage, ctx);
+					this.processedMessages.push(message);
+				} catch (err) {
+					await this.callbacks.onMessageConsumptionError.map((cb) => cb(err, message));
+
+					throw err;
+				}
 			}
 		});
 	}

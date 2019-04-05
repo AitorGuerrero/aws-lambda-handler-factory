@@ -11,6 +11,7 @@ interface IEndpointConfig {
 	paramsNames: string[];
 	handlers: {
 		GET?: ApiHandler;
+		PATCH?: ApiHandler;
 		PUT?: ApiHandler;
 		POST?: ApiHandler;
 		DELETE?: ApiHandler;
