@@ -56,10 +56,10 @@ export class AwsLambdaHandlerFactory {
 	 * }
 	 */
 	public readonly callbacks: {
-		flush: Array<(response: unknown) => (Promise<unknown> | unknown)>;
-		handleError: Array<(err: Error) => (Promise<unknown> | unknown)>;
+		flush: Array<(response: unknown, ctx: IContext) => (Promise<unknown> | unknown)>;
+		handleError: Array<(err: Error, ctx: IContext) => (Promise<unknown> | unknown)>;
 		initialize: Array<(input: unknown, ctx: IContext) => (Promise<unknown> | unknown)>;
-		persist: Array<(response: unknown) => (Promise<unknown> | unknown)>;
+		persist: Array<(response: unknown, ctx: IContext) => (Promise<unknown> | unknown)>;
 	} = {
 		flush: [],
 		handleError: [],
@@ -86,15 +86,15 @@ export class AwsLambdaHandlerFactory {
 			this.controlTimeOut(ctx);
 			try {
 				const response = await handler(input, ctx);
-				await Promise.all(this.callbacks.persist.map((c) => c(response)));
+				await Promise.all(this.callbacks.persist.map((c) => c(response, ctx)));
 				this.eventEmitter.emit(handlerEventType.persisted, response);
-				await Promise.all(this.callbacks.flush.map((c) => c(response)));
+				await Promise.all(this.callbacks.flush.map((c) => c(response, ctx)));
 				this.eventEmitter.emit(handlerEventType.succeeded, response);
 				this.eventEmitter.emit(handlerEventType.finished);
 				this.clearTimeOutControl();
 				cb(null, response);
 			} catch (err) {
-				await Promise.all(this.callbacks.handleError.map((c) => c(err)));
+				await Promise.all(this.callbacks.handleError.map((c) => c(err, ctx)));
 				this.eventEmitter.emit(handlerEventType.error, err);
 				this.eventEmitter.emit(handlerEventType.finished);
 				this.clearTimeOutControl();
