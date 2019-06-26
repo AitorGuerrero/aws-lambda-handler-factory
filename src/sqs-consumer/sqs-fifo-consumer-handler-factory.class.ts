@@ -83,7 +83,15 @@ export class SqsFifoConsumerHandlerFactory<Message> {
 		return new Promise((rs, rj) => this.lambda.invoke({
 			FunctionName: this.ctx.functionName,
 			InvocationType: "Event",
-			Payload: JSON.stringify({retryMessagesGet: true}),
+			Payload: JSON.stringify({
+				env: {
+					awsRequestId: this.ctx.awsRequestId,
+					functionName: this.ctx.functionName,
+					logGroupName: this.ctx.logGroupName,
+					logStreamName: this.ctx.logStreamName,
+				},
+				retryMessagesGet: true,
+			}),
 		}, (err) => err ? rj(err) : rs()));
 	}
 
