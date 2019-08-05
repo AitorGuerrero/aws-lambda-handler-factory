@@ -89,10 +89,7 @@ export class AwsLambdaApiHandlerFactory implements IAwsLambdaApiHandlerFactory {
 
 	private buildServerErrorResponse(err: Error) {
 		return new HandlerCustomError({
-			body: JSON.stringify({
-				error: { code: "system-error" },
-				success: false,
-			}),
+			body: err.message,
 			headers: this.makeHeaders(),
 			statusCode: 500,
 		}, err);
@@ -100,10 +97,7 @@ export class AwsLambdaApiHandlerFactory implements IAwsLambdaApiHandlerFactory {
 
 	private buildErrorResponse(err: ApiRequestError) {
 		return new HandlerCustomError({
-			body: JSON.stringify({
-				error: { code: err.name },
-				success: false,
-			}),
+			body: err.message,
 			headers: this.makeHeaders(),
 			statusCode: err.statusCode,
 		}, err);

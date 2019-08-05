@@ -3,6 +3,7 @@ import {expect} from "chai";
 import {beforeEach, describe} from "mocha";
 import {AwsLambdaHandlerFactory, handlerEventType, LambdaHandler} from "../handler-factory.class";
 import {IContext} from "../context-interface";
+import {ApiRequestNotFoundError} from "./error.not-found.class";
 import {AwsLambdaApiHandlerFactory} from "./handler-factory.class";
 
 describe("Having a api handler factory", () => {
@@ -39,7 +40,7 @@ describe("Having a api handler factory", () => {
 			expect(response.body).to.be.equal("{\"result\":\"ok\"}");
 		});
 	});
-	describe("and the handler fails", () => {
+	describe("and the handler fails with unknown error", () => {
 		const error = new Error("thrownError");
 		beforeEach(() => {
 			apiFactory.eventEmitter.on("error", () => null);
@@ -75,6 +76,23 @@ describe("Having a api handler factory", () => {
 				await asyncHandler(handler)(null, ctx);
 			} catch (e) {}
 			expect(called).to.be.false;
+		});
+	});
+	describe('and the handler fails with Api Request error', () => {
+		const myCustomMessage = "myCustomMessage";
+		beforeEach(() => {
+			apiFactory.eventEmitter.on("error", () => null);
+			handler = apiFactory.build(async () => {
+				throw new ApiRequestNotFoundError(myCustomMessage);
+			});
+		});
+		it("should return 404 status code", async () => {
+			const response = await asyncHandler(handler)(null, ctx);
+			expect(response.statusCode).to.be.eq(ApiRequestNotFoundError.statusCode);
+		});
+		it("should return custom message", async () => {
+			const response = await asyncHandler(handler)(null, ctx);
+			expect(response.body).to.be.eq(myCustomMessage);
 		});
 	});
 });
