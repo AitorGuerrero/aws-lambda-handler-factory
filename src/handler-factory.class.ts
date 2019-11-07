@@ -2,6 +2,7 @@ import {EventEmitter} from "events";
 import {IContext} from "./context-interface";
 import {HandlerCustomError} from "./error.handler-custom.class";
 import IHandlerFactory, {ICallbacks} from "./handler-facotory.interface";
+import TimeoutControl, {TimeoutControlEventType} from "./timeout-control.class";
 
 export type LambdaHandler<Input, Output> = (
 	input: Input,
@@ -76,7 +77,11 @@ export class AwsLambdaHandlerFactory implements IHandlerFactory {
 		return async (input, ctx, cb) => {
 			await Promise.all(this.callbacks.initialize.map((c) => c(input, ctx)));
 			this.eventEmitter.emit(handlerEventType.called, input, ctx);
-			this.controlTimeOut(ctx);
+			const timeoutControl = new TimeoutControl(ctx, this.timeOutSecureMargin);
+			timeoutControl.eventEmitter.on(
+				TimeoutControlEventType.timeOut,
+				(e) => this.eventEmitter.emit(handlerEventType.timeOut, e),
+			);
 			try {
 				const response = await handler(input, ctx);
 				await Promise.all(this.callbacks.persist.map((c) => c(response, ctx)));
@@ -84,13 +89,13 @@ export class AwsLambdaHandlerFactory implements IHandlerFactory {
 				await Promise.all(this.callbacks.flush.map((c) => c(response, ctx)));
 				this.eventEmitter.emit(handlerEventType.succeeded, response);
 				this.eventEmitter.emit(handlerEventType.finished);
-				this.clearTimeOutControl();
+				timeoutControl.clear();
 				cb(null, response);
 			} catch (err) {
 				await Promise.all(this.callbacks.handleError.map((c) => c(err, ctx)));
 				this.eventEmitter.emit(handlerEventType.error, err);
 				this.eventEmitter.emit(handlerEventType.finished);
-				this.clearTimeOutControl();
+				timeoutControl.clear();
 				if (err instanceof HandlerCustomError) {
 					cb(null, err.response);
 				} else {
@@ -98,24 +103,5 @@ export class AwsLambdaHandlerFactory implements IHandlerFactory {
 				}
 			}
 		};
-	}
-
-	private controlTimeOut(ctx: IContext) {
-		if (ctx.getRemainingTimeInMillis === undefined) {
-			return;
-		}
-		const remainingTime = ctx.getRemainingTimeInMillis() - this.timeOutSecureMargin;
-		if (remainingTime <= 0) {
-			return;
-		}
-		this.timer = setTimeout(() => this.eventEmitter.emit(handlerEventType.timeOut), remainingTime);
-	}
-
-	private clearTimeOutControl() {
-		if (this.timer === undefined) {
-			return;
-		}
-		clearTimeout(this.timer);
-		this.timer = undefined;
 	}
 }
