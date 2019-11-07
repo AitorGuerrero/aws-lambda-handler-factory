@@ -1,9 +1,6 @@
 import {EventEmitter} from "events";
 import {IContext} from "./context-interface";
-
-export enum TimeoutControlEventType {
-	timeOut = "timeOut",
-}
+import EventTimeout from "./event.timeout.class";
 
 export default class TimeoutControl {
 
@@ -22,7 +19,7 @@ export default class TimeoutControl {
 		if (remainingTime <= 0) {
 			return;
 		}
-		this.timer = setTimeout(() => this.eventEmitter.emit(TimeoutControlEventType.timeOut), remainingTime);
+		this.timer = setTimeout(() => this.eventEmitter.emit(EventTimeout.code, new EventTimeout()), remainingTime);
 	}
 
 	public clear() {

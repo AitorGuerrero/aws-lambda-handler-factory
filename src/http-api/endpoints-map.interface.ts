@@ -1,4 +1,4 @@
-import {ApiHandler} from "./handler-factory.class";
+import {ApiHandler} from "./decorator.api-handler";
 import HttpMethod from "./http-methods.enum";
 
 export default interface IEndpointsMap {
