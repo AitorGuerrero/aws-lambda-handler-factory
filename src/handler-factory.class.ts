@@ -1,9 +1,13 @@
 import {EventEmitter} from "events";
 import {IContext} from "./context-interface";
 import {HandlerCustomError} from "./error.handler-custom.class";
+import IHandlerFactory, {ICallbacks} from "./handler-facotory.interface";
 
-export type LambdaHandler<Input, Output> = (input: Input, ctx: IContext, cb: (error?: Error, data?: Output) => unknown)
-	=> unknown;
+export type LambdaHandler<Input, Output> = (
+	input: Input,
+	ctx: IContext,
+	cb: (error?: Error, data?: Output) => unknown,
+) => unknown;
 
 /**
  * Emitted event types
@@ -34,7 +38,7 @@ export enum handlerEventType {
  * ```
  *
  */
-export class AwsLambdaHandlerFactory {
+export class AwsLambdaHandlerFactory implements IHandlerFactory {
 
 	/**
 	 * Emits the events defined in the HandlerEventType enum
@@ -46,21 +50,10 @@ export class AwsLambdaHandlerFactory {
 
 	/**
 	 * Functions executed in some execution points.
-	 * They can be overwritten, and admits async functions. If you overwrite them, remember to call the original
-	 * function.
-	 * e.g:
-	 * const originalOnInit = handlerFactory.callbacks.onInit;
-	 * handlerFactory.callbacks.onInit = async (input, ctx) => {
-	 *     // Your stuff
-	 *     await originalOnInit(input, ctx);
-	 * }
+	 * - To add some action, push the callback function to the array
+	 * - admits async functions.
 	 */
-	public readonly callbacks: {
-		flush: Array<(response: unknown, ctx: IContext) => (Promise<unknown> | unknown)>;
-		handleError: Array<(err: Error, ctx: IContext) => (Promise<unknown> | unknown)>;
-		initialize: Array<(input: unknown, ctx: IContext) => (Promise<unknown> | unknown)>;
-		persist: Array<(response: unknown, ctx: IContext) => (Promise<unknown> | unknown)>;
-	} = {
+	public readonly callbacks: ICallbacks = {
 		flush: [],
 		handleError: [],
 		initialize: [],

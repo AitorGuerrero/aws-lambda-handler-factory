@@ -27,11 +27,6 @@ export class AwsLambdaApiHandlerFactory implements IAwsLambdaApiHandlerFactory {
 	 * - To add some action, push the callback function to the array
 	 * - admits async functions.
 	 * function.
-	 * e.g:
-	 * const originalOnError = handlerFactory.callbacks.onError;
-	 * handlerFactory.callbacks.onInit.push(async (input, ctx) => {
-	 *     // Your stuff
-	 * });
 	 */
 	public readonly callbacks: {
 		onError: Array<(err: Error) => (Promise<any> | any)>;
