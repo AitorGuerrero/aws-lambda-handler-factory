@@ -1,5 +1,5 @@
-import { decorateHandler } from "./src/decorator.handler";
-import { decorateHandlerWithCallbacks } from "./src/decorator.handler-callbacks";
+import { decorateHandler, ICallbacks as IDecoratorHandlerCallbacks } from "./src/decorator.handler";
+import { decorateHandlerWithCallbacks, ICallbacks } from "./src/decorator.handler-callbacks";
 import decorateHandlerWithCustomError from "./src/decorator.handler-custom-error";
 import { decorateHandlerWithErrorMiddleware } from "./src/decorator.handler-error-middleware";
 import decorateHandlerWithLifeCycleEventsEmitter from "./src/decorator.handler-life-cycle-events-emissor";
@@ -19,7 +19,8 @@ import { ApiRequestUnauthorizedError } from "./src/http-api/error.unauthorized.c
 import { ApiUnprocessableEntityError } from "./src/http-api/error.unprocessable-entity.class";
 import EventApiSuccessSuccess from "./src/http-api/event.api-success.class";
 import { buildHttpApiLambdaProxyHandler } from "./src/http-api/proxy-handler-factory.class";
-import buildFifoConsumerHandler from "./src/queue-consumer/fifo-queue-consumer-handler.functor";
+import buildFifoConsumerHandler,
+	{ ICallbacks as IFifoQueueConsumerHandlerCallbacks } from "./src/queue-consumer/fifo-queue-consumer-handler.functor";
 
 export {
 	decorateHandler,
@@ -44,4 +45,7 @@ export {
 	EventPersisted,
 	EventSuccess,
 	EventTimeout,
+	IDecoratorHandlerCallbacks,
+	IFifoQueueConsumerHandlerCallbacks,
+	ICallbacks,
 };

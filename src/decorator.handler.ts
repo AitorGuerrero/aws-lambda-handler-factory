@@ -6,7 +6,6 @@ import decorateHandlerWithLifeCycleEventsEmitter from "./decorator.handler-life-
 import decorateHandlerWithTimeoutControl from "./decorator.handler-timeout-control";
 import EventError from "./event.error.class";
 import EventFlushed from "./event.flushed.class";
-import EventInit from "./event.init.class";
 import EventPersisted from "./event.persisted.class";
 import EventSuccess from "./event.success.class";
 
