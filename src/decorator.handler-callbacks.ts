@@ -28,11 +28,11 @@ export function decorateHandlerWithCallbacks<I, O>(
 	}, callbacks);
 	return async (input, ctx) => {
 		try {
-			await Promise.all(completeCallbacks.pre.map((c) => c(response, ctx)));
-			const response = await handler(input, ctx);
-			await Promise.all(completeCallbacks.post.map((c) => c(response, ctx)));
+			await Promise.all(completeCallbacks.pre.map((c) => c(input, ctx)));
+			const output = await handler(input, ctx);
+			await Promise.all(completeCallbacks.post.map((c) => c(output, ctx)));
 
-			return response;
+			return output;
 		} catch (err) {
 			await Promise.all(completeCallbacks.handleError.map((c) => c(err, ctx)));
 
