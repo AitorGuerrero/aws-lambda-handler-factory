@@ -10,7 +10,7 @@ import {ApiRequestError} from "./error.api-request.class";
 import EventApiSuccessSuccess from "./event.api-success.class";
 import {IApiOutput} from "./output.interface";
 
-export type ApiHandler = (input: IApiInput, ctx: IContext) => Promise<IApiOutput> | IApiOutput;
+export type ApiHandler = (input: IApiInput, ctx: IContext) => Promise<IApiOutput>;
 
 /**
  * Decorates a handler with http api features:
@@ -23,7 +23,7 @@ export type ApiHandler = (input: IApiInput, ctx: IContext) => Promise<IApiOutput
  * @param eventEmitter
  */
 export default function decorateHttpApiHandlerWithHttpApiLogic(
-	handler: AsyncLambdaHandler<IApiInput, IApiOutput>,
+	handler: ApiHandler,
 	corsConfig: {
 		allowCredentials?: boolean,
 		allowedOrigin?: string,
