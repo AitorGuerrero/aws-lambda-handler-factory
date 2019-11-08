@@ -6,12 +6,12 @@ interface IMessageId {
 	ReceiptHandle: string;
 }
 
-export default class SqsQueueController<Body> implements IFifoQueueController<IMessageId, Body> {
+export default class SqsFifoQueueController<Body> implements IFifoQueueController<IMessageId, Body> {
 
 	constructor(
 		private sqs: SQS,
 		private queueUrl: string,
-		private maxNumberOfMessages: number,
+		private maxNumberOfMessages = 10,
 	) {}
 
 	public async deleteMessages(ids: IMessageId[]) {

@@ -21,8 +21,14 @@ import {ApiRequestUnauthorizedError} from "./src/http-api/error.unauthorized.cla
 import {ApiUnprocessableEntityError} from "./src/http-api/error.unprocessable-entity.class";
 import EventApiSuccessSuccess from "./src/http-api/event.api-success.class";
 import {buildHttpApiLambdaProxyHandler} from "./src/http-api/proxy-handler-factory.class";
-import buildFifoConsumerHandler, {ICallbacks as IFifoQueueConsumerHandlerCallbacks}
+import buildFifoConsumerHandler, {
+	ICallbacks as IFifoQueueConsumerHandlerCallbacks,
+	IFifoQueueController,
+	IRecurrentCaller,
+}
 	from "./src/queue-consumer/fifo-queue-consumer-handler.functor";
+import SqsFifoQueueController from "./src/queue-consumer/implementations/queue-controller.sqs.class";
+import {LambdaRecurrentCaller} from "./src/queue-consumer/implementations/recurrent-caller.lambda.class";
 
 export {
 	decorateHandler,
@@ -50,7 +56,11 @@ export {
 	IDecoratorHandlerCallbacks,
 	IFifoQueueConsumerHandlerCallbacks,
 	ICallbacks,
+	IRecurrentCaller,
+	IFifoQueueController,
 	PreCallback,
 	PostCallback,
 	ErrorCallback,
+	SqsFifoQueueController,
+	LambdaRecurrentCaller,
 };
