@@ -31,6 +31,13 @@ export interface ICallbacks<I, O> {
  * - Persistence
  * - Flushing
  *
+ * Emitted events
+ * - init EventInit
+ * - persisted EventPersisted
+ * - flushed EventFlushed
+ * - success EventSuccess
+ * - error EventError
+ *
  * @param handler
  * @param callbacks
  * @param eventEmitter
@@ -44,8 +51,8 @@ export function decorateHandler<I, O>(
 	timeOutSecureMargin = 500,
 ): AsyncLambdaHandler<I, O> {
 	return decorateHandlerWithCustomError(
-		decorateWithError(
-			decorateWithInit(
+		decorateHandlerWithLifeCycleEventsEmitter(
+			decorateHandlerWithCallbacks(
 				decorateWithFlush(
 					decorateWithPersist(
 						decorateHandlerWithTimeoutControl(
@@ -55,7 +62,12 @@ export function decorateHandler<I, O>(
 						),
 					),
 				),
+				{
+					handleError: callbacks.handleError,
+					pre: callbacks.initialize,
+				},
 			),
+			eventEmitter,
 		),
 	);
 
@@ -85,26 +97,6 @@ export function decorateHandler<I, O>(
 				{post: callbacks.flush},
 			),
 			flushEventEmitter,
-		);
-	}
-
-	function decorateWithInit(h: AsyncLambdaHandler<I, O>): AsyncLambdaHandler<I, O> {
-		return decorateHandlerWithLifeCycleEventsEmitter(
-			decorateHandlerWithCallbacks(
-				h,
-				{pre: callbacks.initialize},
-			),
-			eventEmitter,
-		);
-	}
-
-	function decorateWithError(h: AsyncLambdaHandler<I, O>): AsyncLambdaHandler<I, O> {
-		return decorateHandlerWithLifeCycleEventsEmitter(
-			decorateHandlerWithCallbacks(
-				h,
-				{handleError: callbacks.handleError},
-			),
-			eventEmitter,
 		);
 	}
 }
