@@ -4,7 +4,7 @@ import {IContext} from "./context-interface";
 export type PreCallback<I> = (input: I, ctx: unknown) => (Promise<unknown> | unknown);
 export type PostCallback<O> = (response: O, ctx: IContext) => (Promise<unknown> | unknown);
 
-export type ErrorCallback = Array<(err: Error, ctx: IContext) => (Promise<unknown> | unknown)>;
+export type ErrorCallback = (err: Error, ctx: IContext) => (Promise<unknown> | unknown);
 
 export interface ICallbacks<I, O> {
 	pre?: Array<PreCallback<I>>;
