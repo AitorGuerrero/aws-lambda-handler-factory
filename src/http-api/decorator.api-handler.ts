@@ -6,6 +6,7 @@ import decorateHandlerWithLifeCycleEventsEmitter from "../decorator.handler-life
 import {decorateHandlerWithOutputMiddleware} from "../decorator.handler-response-middleware";
 import EventSuccess from "../event.success.class";
 import {IApiInput} from "./api-input.interface";
+import ICorsConfig from "./cors-config.interface";
 import {ApiRequestError} from "./error.api-request.class";
 import EventApiSuccessSuccess from "./event.api-success.class";
 import {IApiOutput} from "./output.interface";
@@ -24,10 +25,7 @@ export type ApiHandler = (input: IApiInput, ctx: IContext) => Promise<IApiOutput
  */
 export default function decorateHttpApiHandlerWithHttpApiLogic(
 	handler: ApiHandler,
-	corsConfig: {
-		allowCredentials?: boolean,
-		allowedOrigin?: string,
-	},
+	corsConfig: ICorsConfig,
 	eventEmitter: EventEmitter,
 ): AsyncLambdaHandler<IApiInput, IApiOutput> {
 	const apiEventEmitter = new EventEmitter();
@@ -49,9 +47,7 @@ export default function decorateHttpApiHandlerWithHttpApiLogic(
 					},
 					o,
 					{
-						body: o.body === undefined ? ""
-							: typeof o.body === "string" ? o.body
-								: JSON.stringify(o.body),
+						body: stringifyBody(o.body),
 						headers: makeHeaders(o.headers),
 					},
 				),
@@ -64,6 +60,12 @@ export default function decorateHttpApiHandlerWithHttpApiLogic(
 		),
 		apiEventEmitter,
 	);
+
+	function stringifyBody(body: string | object) {
+		return body === undefined ? ""
+			: typeof body === "string" ? body
+			: JSON.stringify(body);
+	}
 
 	function makeHeaders(inputHeaders?: {[key: string]: string | boolean | number | null}) {
 		const headers: {[key: string]: string | boolean | number | null} = {};

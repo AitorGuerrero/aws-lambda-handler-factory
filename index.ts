@@ -20,7 +20,8 @@ import {ApiRequestNotFoundError} from "./src/http-api/error.not-found.class";
 import {ApiRequestUnauthorizedError} from "./src/http-api/error.unauthorized.class";
 import {ApiUnprocessableEntityError} from "./src/http-api/error.unprocessable-entity.class";
 import EventApiSuccessSuccess from "./src/http-api/event.api-success.class";
-import {buildHttpApiLambdaProxyHandler} from "./src/http-api/proxy-handler-factory.class";
+import buildMultiEndpointHttpApiLambdaHandler from "./src/http-api/functor.api-multi-endpoint";
+import {buildHttpApiLambdaProxyHandler} from "./src/http-api/functor.proxy-api-handler";
 import buildFifoConsumerHandler, {
 	ICallbacks as IFifoQueueConsumerHandlerCallbacks,
 	IFifoQueueController,
@@ -40,6 +41,7 @@ export {
 	decorateHandlerWithTimeoutControl,
 	decorateHttpApiHandlerWithHttpApiLogic,
 	buildHttpApiLambdaProxyHandler,
+	buildMultiEndpointHttpApiLambdaHandler,
 	buildFifoConsumerHandler,
 	ApiRequestError,
 	ApiSystemError,

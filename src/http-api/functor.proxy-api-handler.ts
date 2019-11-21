@@ -1,5 +1,7 @@
+import {EventEmitter} from "events";
 import {IApiInput} from "./api-input.interface";
-import {ApiHandler} from "./decorator.api-handler";
+import ICorsConfig from "./cors-config.interface";
+import decorateHttpApiHandlerWithHttpApiLogic, {ApiHandler} from "./decorator.api-handler";
 import IEndpointsMap from "./endpoints-map.interface";
 import HttpMethod from "./http-methods.enum";
 
@@ -18,35 +20,37 @@ interface IEndpointConfig {
 }
 
 /**
- *
- * @param basePathMapping
- * @param endpoints
+ * Builds a aws lambda handler for a lambda with proxy http event.
+ * @param basePathMapping string
+ * @param endpoints IEndpointsMap
+ * @param corsConfig ICorsConfig
+ * @param eventEmitter EventEmitter
  */
 export function buildHttpApiLambdaProxyHandler(
 	basePathMapping: string,
 	endpoints: IEndpointsMap,
+	corsConfig: ICorsConfig,
+	eventEmitter: EventEmitter,
 ): ApiHandler {
 	const endpointsConfig = composeEndpointsConfig();
 
-	return async (event, ctx) => {
-		const handlerConfig = getHandlerConfigFromInput(event);
-		if (handlerConfig === undefined) {
-			return {body: "", headers: {}, statusCode: 404};
-		}
-		const handler = getHandlerFromInput(event, handlerConfig);
-		const parsedEvent = composeEvent(event, handlerConfig);
-		if (handler === undefined) {
-			return {body: "", headers: {}, statusCode: 404};
-		}
-		const response = await handler(parsedEvent, ctx);
+	return decorateHttpApiHandlerWithHttpApiLogic(
+		async (event, ctx) => {
+			const handlerConfig = getHandlerConfigFromInput(event);
+			if (handlerConfig === undefined) {
+				return {body: "", headers: {}, statusCode: 404};
+			}
+			const handler = getHandlerFromInput(event, handlerConfig);
+			const parsedEvent = composeEvent(event, handlerConfig);
+			if (handler === undefined) {
+				return {body: "", headers: {}, statusCode: 404};
+			}
 
-		return Object.assign({
-			headers: {},
-			statusCode: 200,
-		}, response, {
-			body: response.body === undefined ? "" : JSON.stringify(response.body),
-		});
-	};
+			return await handler(parsedEvent, ctx);
+		},
+		corsConfig,
+		eventEmitter,
+	);
 
 	function composeEndpointsConfig() {
 		const composedEndpointsConfig: IEndpointConfig[] = [];
@@ -65,7 +69,7 @@ export function buildHttpApiLambdaProxyHandler(
 	}
 
 	function getParamsNamesFromPath(path: string) {
-		const paramNamesRegExp = /[^{]*\{(.*?)\}/y;
+		const paramNamesRegExp = /[^{]*{(.*?)}/y;
 		let match;
 		const paramsNames: string[] = [];
 		while (match = paramNamesRegExp.exec(path)) {
