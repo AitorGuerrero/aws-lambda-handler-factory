@@ -1,8 +1,8 @@
 import {EventEmitter} from "events";
 import {AsyncLambdaHandler} from "./async-lambda-handler.type";
-import EventError from "./event.error.class";
-import EventInit from "./event.init.class";
-import EventSuccess from "./event.success.class";
+import ErrorOcurred from "./event.error.class";
+import Initialized from "./event.init.class";
+import Succeeded from "./event.success.class";
 
 /**
  *
@@ -14,14 +14,14 @@ export default function decorateHandlerWithLifeCycleEventsEmitter<I, O>(
 	eventEmitter: EventEmitter,
 ): AsyncLambdaHandler<I, O> {
 	return async (input, ctx) => {
-		eventEmitter.emit(EventInit.code, new EventInit(input, ctx));
+		eventEmitter.emit(Initialized.code, new Initialized(input, ctx));
 		try {
 			const response = await handler(input, ctx);
-			eventEmitter.emit(EventSuccess.code, new EventSuccess(input, response, ctx));
+			eventEmitter.emit(Succeeded.code, new Succeeded(input, response, ctx));
 
 			return response;
 		} catch (err) {
-			eventEmitter.emit(EventError.code, new EventError(input, err, ctx));
+			eventEmitter.emit(ErrorOcurred.code, new ErrorOcurred(input, err, ctx));
 
 			throw err;
 		}

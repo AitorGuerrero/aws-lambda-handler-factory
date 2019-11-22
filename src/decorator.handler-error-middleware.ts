@@ -6,7 +6,7 @@ import {IContext} from "./context-interface";
  * @param handler
  * @param middleWare
  */
-export function decorateHandlerWithErrorMiddleware<I, O>(
+export default function decorateHandlerWithErrorMiddleware<I, O>(
 	handler: AsyncLambdaHandler<I, O>,
 	middleWare: (e: Error, ctx: IContext) => Promise<O>,
 ): AsyncLambdaHandler<I, O> {

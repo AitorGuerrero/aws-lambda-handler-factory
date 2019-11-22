@@ -1,4 +1,4 @@
-export class ApiSystemError extends Error {
+export default class ApiSystemFailed extends Error {
 
 	public readonly statusCode: number = 500;
 

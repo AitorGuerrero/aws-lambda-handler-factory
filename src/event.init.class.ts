@@ -1,6 +1,6 @@
 import {IContext} from "./context-interface";
 
-export default class EventInit<I> {
+export default class Initialized<I> {
 
 	public static code = "initializing";
 

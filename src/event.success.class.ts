@@ -1,6 +1,6 @@
 import {IContext} from "./context-interface";
 
-export default class EventSuccess<I, O> {
+export default class Succeeded<I, O> {
 
 	public static code = "success";
 

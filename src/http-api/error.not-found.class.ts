@@ -1,17 +1,17 @@
-import {ApiRequestError} from "./error.api-request.class";
+import ApiRequestFailed from "./error.api-request.class";
 
-export class ApiRequestNotFoundError extends ApiRequestError {
+export default class ApiRequestNotFound extends ApiRequestFailed {
 
 	public static readonly statusCode = 404;
 	public static readonly code = "notFound";
 	public static readonly message = "The requested resource could not be found";
 
-	public readonly statusCode: number = ApiRequestNotFoundError.statusCode;
+	public readonly statusCode: number = ApiRequestNotFound.statusCode;
 
 	public constructor(message?: string) {
 		super(
-			ApiRequestNotFoundError.code,
-			message || ApiRequestNotFoundError.message,
+			ApiRequestNotFound.code,
+			message || ApiRequestNotFound.message,
 		);
 	}
 }

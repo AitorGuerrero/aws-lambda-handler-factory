@@ -1,4 +1,4 @@
-export class ApiRequestError extends Error {
+export default class ApiRequestFailed extends Error {
 
 	public readonly statusCode: number = 400;
 

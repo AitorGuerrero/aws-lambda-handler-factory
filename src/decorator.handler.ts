@@ -4,12 +4,12 @@ import {decorateHandlerWithCallbacks, ErrorCallback, PostCallback, PreCallback} 
 import decorateHandlerWithCustomError from "./decorator.handler-custom-error";
 import decorateHandlerWithLifeCycleEventsEmitter from "./decorator.handler-life-cycle-events-emissor";
 import decorateHandlerWithTimeoutControl from "./decorator.handler-timeout-control";
-import EventError from "./event.error.class";
-import EventFlushInit from "./event.flush-init.class";
-import EventFlushed from "./event.flushed.class";
+import ErrorOcurred from "./event.error.class";
+import Flushed from "./event.flushed.class";
 import EventInitializing from "./event.init.class";
-import EventPersisted from "./event.persisted.class";
-import EventSuccess from "./event.success.class";
+import EventFlushInit from "./event.initializing-flush.class";
+import Persisted from "./event.persisted.class";
+import Succeeded from "./event.success.class";
 
 export interface ICallbacks<I, O> {
 	flush: Array<PostCallback<O>>;
@@ -35,11 +35,11 @@ export interface ICallbacks<I, O> {
  *
  * Emitted events
  * - initializing EventInitializing
- * - persisted EventPersisted
+ * - persisted Persisted
  * - initializingFlush InitializingFlush
- * - flushed EventFlushed
- * - success EventSuccess
- * - error EventError
+ * - flushed Flushed
+ * - success Succeeded
+ * - error ErrorOcurred
  *
  * @param handler
  * @param callbacks
@@ -77,10 +77,10 @@ export function decorateHandler<I, O>(
 	function decorateWithPersist(h: AsyncLambdaHandler<I, O>): AsyncLambdaHandler<I, O> {
 		const persistEventEmitter = new EventEmitter();
 		persistEventEmitter.on(
-			EventSuccess.code,
-			(e: EventSuccess<I, O>) => eventEmitter.emit(EventPersisted.code, new EventPersisted(e.output, e.ctx)),
+			Succeeded.code,
+			(e: Succeeded<I, O>) => eventEmitter.emit(Persisted.code, new Persisted(e.output, e.ctx)),
 		);
-		persistEventEmitter.on(EventError.code, (e: EventError<I>) => eventEmitter.emit(EventError.code, e));
+		persistEventEmitter.on(ErrorOcurred.code, (e: ErrorOcurred<I>) => eventEmitter.emit(ErrorOcurred.code, e));
 		return decorateHandlerWithLifeCycleEventsEmitter(
 			decorateHandlerWithCallbacks(h, {post: callbacks.persist}),
 			persistEventEmitter,
@@ -91,13 +91,13 @@ export function decorateHandler<I, O>(
 		const flushEventEmitter = new EventEmitter();
 		flushEventEmitter.on(
 			EventInitializing.code,
-			(e: EventSuccess<I, O>) => eventEmitter.emit(EventFlushInit.code, new EventFlushInit(e.output, e.ctx)),
+			(e: Succeeded<I, O>) => eventEmitter.emit(EventFlushInit.code, new EventFlushInit(e.output, e.ctx)),
 		);
 		flushEventEmitter.on(
-			EventSuccess.code,
-			(e: EventSuccess<I, O>) => eventEmitter.emit(EventFlushed.code, new EventFlushed(e.output, e.ctx)),
+			Succeeded.code,
+			(e: Succeeded<I, O>) => eventEmitter.emit(Flushed.code, new Flushed(e.output, e.ctx)),
 		);
-		flushEventEmitter.on(EventError.code, (e: EventError<I>) => eventEmitter.emit(EventError.code, e));
+		flushEventEmitter.on(ErrorOcurred.code, (e: ErrorOcurred<I>) => eventEmitter.emit(ErrorOcurred.code, e));
 		return decorateHandlerWithLifeCycleEventsEmitter(
 			decorateHandlerWithCallbacks(
 				decorateWithPersist(h),

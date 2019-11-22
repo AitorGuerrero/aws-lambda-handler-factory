@@ -3,25 +3,26 @@ import {decorateHandler, ICallbacks as IDecoratorHandlerCallbacks} from "./src/d
 import {decorateHandlerWithCallbacks, ErrorCallback, ICallbacks, PostCallback, PreCallback}
 	from "./src/decorator.handler-callbacks";
 import decorateHandlerWithCustomError from "./src/decorator.handler-custom-error";
-import {decorateHandlerWithErrorMiddleware} from "./src/decorator.handler-error-middleware";
+import decorateHandlerWithErrorMiddleware from "./src/decorator.handler-error-middleware";
 import decorateHandlerWithLifeCycleEventsEmitter from "./src/decorator.handler-life-cycle-events-emissor";
-import {decorateHandlerWithOutputMiddleware} from "./src/decorator.handler-response-middleware";
+import decorateHandlerWithOutputMiddleware from "./src/decorator.handler-response-middleware";
 import decorateHandlerWithTimeoutControl from "./src/decorator.handler-timeout-control";
-import EventError from "./src/event.error.class";
-import EventFlushed from "./src/event.flushed.class";
-import EventInit from "./src/event.init.class";
-import EventPersisted from "./src/event.persisted.class";
-import EventSuccess from "./src/event.success.class";
-import EventTimeout from "./src/event.timeout.class";
+import ErrorOcurred from "./src/event.error.class";
+import Flushed from "./src/event.flushed.class";
+import Initialized from "./src/event.init.class";
+import InitializingFlush from "./src/event.initializing-flush.class";
+import Persisted from "./src/event.persisted.class";
+import Succeeded from "./src/event.success.class";
+import TimeoutReached from "./src/event.timeout.class";
 import decorateHttpApiHandlerWithHttpApiLogic from "./src/http-api/decorator.api-handler";
-import {ApiRequestError} from "./src/http-api/error.api-request.class";
-import {ApiSystemError} from "./src/http-api/error.api-system.class";
-import {ApiRequestNotFoundError} from "./src/http-api/error.not-found.class";
-import {ApiRequestUnauthorizedError} from "./src/http-api/error.unauthorized.class";
-import {ApiUnprocessableEntityError} from "./src/http-api/error.unprocessable-entity.class";
-import EventApiSuccessSuccess from "./src/http-api/event.api-success.class";
+import ApiRequestFailed from "./src/http-api/error.api-request.class";
+import ApiSystemFailed from "./src/http-api/error.api-system.class";
+import ApiRequestNotFound from "./src/http-api/error.not-found.class";
+import ApiRequestUnauthorized from "./src/http-api/error.unauthorized.class";
+import ApiUnprocessableEntity from "./src/http-api/error.unprocessable-entity.class";
+import ApiSucceeded from "./src/http-api/event.api-success.class";
 import buildMultiEndpointHttpApiLambdaHandler from "./src/http-api/functor.api-multi-endpoint";
-import {buildHttpApiLambdaProxyHandler} from "./src/http-api/functor.proxy-api-handler";
+import buildHttpApiLambdaProxyHandler from "./src/http-api/functor.proxy-api-handler";
 import buildFifoConsumerHandler, {
 	ICallbacks as IFifoQueueConsumerHandlerCallbacks,
 	IFifoQueueController,
@@ -43,18 +44,19 @@ export {
 	buildHttpApiLambdaProxyHandler,
 	buildMultiEndpointHttpApiLambdaHandler,
 	buildFifoConsumerHandler,
-	ApiRequestError,
-	ApiSystemError,
-	ApiRequestNotFoundError,
-	ApiRequestUnauthorizedError,
-	ApiUnprocessableEntityError,
-	EventApiSuccessSuccess,
-	EventError,
-	EventFlushed,
-	EventInit,
-	EventPersisted,
-	EventSuccess,
-	EventTimeout,
+	ApiRequestFailed,
+	ApiSystemFailed,
+	ApiRequestNotFound,
+	ApiRequestUnauthorized,
+	ApiUnprocessableEntity,
+	ApiSucceeded,
+	ErrorOcurred,
+	Flushed,
+	Initialized,
+	Persisted,
+	Succeeded,
+	TimeoutReached,
+	InitializingFlush,
 	IDecoratorHandlerCallbacks,
 	IFifoQueueConsumerHandlerCallbacks,
 	ICallbacks,

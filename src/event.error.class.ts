@@ -1,6 +1,6 @@
 import {IContext} from "./context-interface";
 
-export default class EventError<I> {
+export default class ErrorOcurred<I> {
 
 	public static code = "error";
 

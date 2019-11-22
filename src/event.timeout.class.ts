@@ -1,3 +1,3 @@
-export default class EventTimeout {
-	public static code = "onTimeout";
+export default class TimeoutReached {
+	public static code = "timeoutReached";
 }

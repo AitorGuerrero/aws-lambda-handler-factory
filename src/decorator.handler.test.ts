@@ -7,7 +7,7 @@ import {AsyncLambdaHandler} from "./async-lambda-handler.type";
 import {IContext} from "./context-interface";
 import {decorateHandler, ICallbacks} from "./decorator.handler";
 import {HandlerCustomError} from "./error.handler-custom.class";
-import EventError from "./event.error.class";
+import ErrorOcurred from "./event.error.class";
 
 describe("Decorating a handler", () => {
 
@@ -24,7 +24,7 @@ describe("Decorating a handler", () => {
 			persist: [],
 		};
 		eventEmitter = new EventEmitter();
-		eventEmitter.on(EventError.code, () => null);
+		eventEmitter.on(ErrorOcurred.code, () => null);
 		ctx = {
 			awsRequestId: "",
 			functionName: "",
@@ -118,14 +118,14 @@ describe("Decorating a handler", () => {
 
 	function itShouldEmitError(error: Error) {
 		it("should emit error", async () => {
-			let emittedError: EventError<unknown>;
-			eventEmitter.on(EventError.code, (err) => emittedError = err);
+			let emittedError: ErrorOcurred<unknown>;
+			eventEmitter.on(ErrorOcurred.code, (err) => emittedError = err);
 			try {
 				await decorateHandler(handler, callbacks, eventEmitter)(null, ctx);
 				expect.fail("Should fail.");
 			} catch (err) {
 				expect(emittedError).not.to.be.undefined;
-				expect(emittedError).to.be.instanceOf(EventError);
+				expect(emittedError).to.be.instanceOf(ErrorOcurred);
 				expect(emittedError.error).to.be.eq(error);
 			}
 		});

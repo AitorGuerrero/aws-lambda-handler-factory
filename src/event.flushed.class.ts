@@ -1,6 +1,6 @@
 import {IContext} from "./context-interface";
 
-export default class EventFlushed<O> {
+export default class Flushed<O> {
 
 	public static code = "flushed";
 

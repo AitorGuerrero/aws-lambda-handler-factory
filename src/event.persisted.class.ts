@@ -1,6 +1,6 @@
 import {IContext} from "./context-interface";
 
-export default class EventPersisted<O> {
+export default class Persisted<O> {
 
 	public static code = "persisted";
 

@@ -26,7 +26,7 @@ interface IEndpointConfig {
  * @param corsConfig ICorsConfig
  * @param eventEmitter EventEmitter
  */
-export function buildHttpApiLambdaProxyHandler(
+export default function buildHttpApiLambdaProxyHandler(
 	basePathMapping: string,
 	endpoints: IEndpointsMap,
 	corsConfig: ICorsConfig,
