@@ -1,6 +1,6 @@
 {
   "name": "aws-lambda-handler-factory",
-  "version": "4.0.0-8",
+  "version": "4.0.0-9",
   "description": "AWS Serverless handlers factories",
   "main": "index.js",
   "scripts": {
