@@ -5,7 +5,9 @@ import decorateHandlerWithCustomError from "./decorator.handler-custom-error";
 import decorateHandlerWithLifeCycleEventsEmitter from "./decorator.handler-life-cycle-events-emissor";
 import decorateHandlerWithTimeoutControl from "./decorator.handler-timeout-control";
 import EventError from "./event.error.class";
+import EventFlushInit from "./event.flush-init.class";
 import EventFlushed from "./event.flushed.class";
+import EventInitializing from "./event.init.class";
 import EventPersisted from "./event.persisted.class";
 import EventSuccess from "./event.success.class";
 
@@ -26,14 +28,15 @@ export interface ICallbacks<I, O> {
  * - Custom error for returning error withhout throwing
  *
  * The life cycle is:
- * - Initialization
+ * - initialize callbacks
  * - Handler execution
- * - Persistence
- * - Flushing
+ * - persist callbacks
+ * - flush callbacks
  *
  * Emitted events
- * - init EventInit
+ * - initializing EventInitializing
  * - persisted EventPersisted
+ * - initializingFlush InitializingFlush
  * - flushed EventFlushed
  * - success EventSuccess
  * - error EventError
@@ -86,6 +89,10 @@ export function decorateHandler<I, O>(
 
 	function decorateWithFlush(h: AsyncLambdaHandler<I, O>): AsyncLambdaHandler<I, O> {
 		const flushEventEmitter = new EventEmitter();
+		flushEventEmitter.on(
+			EventInitializing.code,
+			(e: EventSuccess<I, O>) => eventEmitter.emit(EventFlushInit.code, new EventFlushInit(e.output, e.ctx)),
+		);
 		flushEventEmitter.on(
 			EventSuccess.code,
 			(e: EventSuccess<I, O>) => eventEmitter.emit(EventFlushed.code, new EventFlushed(e.output, e.ctx)),
