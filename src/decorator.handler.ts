@@ -99,10 +99,7 @@ export function decorateHandler<I, O>(
 		);
 		flushEventEmitter.on(ErrorOcurred.code, (e: ErrorOcurred<I>) => eventEmitter.emit(ErrorOcurred.code, e));
 		return decorateHandlerWithLifeCycleEventsEmitter(
-			decorateHandlerWithCallbacks(
-				decorateWithPersist(h),
-				{post: callbacks.flush},
-			),
+			decorateHandlerWithCallbacks(h, {post: callbacks.flush}),
 			flushEventEmitter,
 		);
 	}

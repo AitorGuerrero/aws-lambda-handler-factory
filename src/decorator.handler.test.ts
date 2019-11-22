@@ -8,6 +8,8 @@ import {IContext} from "./context-interface";
 import {decorateHandler, ICallbacks} from "./decorator.handler";
 import {HandlerCustomError} from "./error.handler-custom.class";
 import ErrorOcurred from "./event.error.class";
+import Flushed from "./event.flushed.class";
+import Persisted from "./event.persisted.class";
 
 describe("Decorating a handler", () => {
 
@@ -101,6 +103,20 @@ describe("Decorating a handler", () => {
 			expect(response).to.be.equal(expectedResponse);
 		});
 		itShouldEmitError(error);
+	});
+
+	it("should emit flushed event once", async () => {
+		const emittedEvents: Array<Flushed<unknown>> = [];
+		eventEmitter.on(Flushed.code, (e) => emittedEvents.push(e));
+		await decorateHandler(handler, callbacks, eventEmitter)(null, ctx);
+		expect(emittedEvents).to.be.length(1);
+	});
+
+	it("should emit persisted event once", async () => {
+		const emittedEvents: Array<Persisted<unknown>> = [];
+		eventEmitter.on(Persisted.code, (e) => emittedEvents.push(e));
+		await decorateHandler(handler, callbacks, eventEmitter)(null, ctx);
+		expect(emittedEvents).to.be.length(1);
 	});
 
 	function itShouldNotFlush() {
