@@ -24,7 +24,7 @@
   },
   "husky": {
     "hooks": {
-      "pre-commit": "npm run build && npm run style && npm run test"
+      "pre-commit": "yarn build && yarn style && yarn test"
     }
   }
 }
