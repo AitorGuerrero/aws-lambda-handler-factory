@@ -2,7 +2,7 @@ import {SQS} from "aws-sdk";
 import {expect} from "chai";
 import {FakeSqs} from "../../helpers/fake-sqs.class";
 import AwsLambdaHandlerFactory from "../handler-factory.class";
-import {SqsConsumerHandlerFactory} from "./sqs-consumer-handler-factory.class";
+import SqsConsumerHandlerFactory from "./sqs-consumer-handler-factory.class";
 
 describe("Having a sqs consumer", () => {
 

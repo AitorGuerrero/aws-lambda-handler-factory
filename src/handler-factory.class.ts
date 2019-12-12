@@ -1,5 +1,5 @@
 import {EventEmitter} from "events";
-import ICallbacks from "./callbacks.interface";
+import Callbacks from "./callbacks.class";
 import IContext from "./context-interface";
 import HandlerCustomError from "./error.handler-custom.class";
 import IHandlerFactory from "./handler-facotory.interface";
@@ -56,12 +56,7 @@ export default class AwsLambdaHandlerFactory implements IHandlerFactory {
 		/**
 		 * Functions executed in some execution points.
 		 */
-		public readonly callbacks: ICallbacks = {
-			flush: [],
-			handleError: [],
-			initialize: [],
-			persist: [],
-		},
+		public readonly callbacks = new Callbacks(),
 	) {}
 
 	/**

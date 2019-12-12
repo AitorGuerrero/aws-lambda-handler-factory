@@ -3,7 +3,7 @@ import {clearTimeout, setTimeout} from "timers";
 import IContext from "../context-interface";
 import AwsLambdaHandlerFactory from "../handler-factory.class";
 
-export class SqsConsumerHandlerFactory {
+export default class SqsConsumerHandlerFactory {
 
 	public readonly callbacks: {
 		onInitBatchProcess: Array<() => Promise<unknown>>;

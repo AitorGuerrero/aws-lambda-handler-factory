@@ -3,6 +3,7 @@ import IContext from "../context-interface";
 import HandlerCustomError from "../error.handler-custom.class";
 import AwsLambdaHandlerFactory, {LambdaHandler} from "../handler-factory.class";
 import {IApiInput} from "./api-input.interface";
+import Callbacks from "./callbacks.class";
 import {ApiRequestError} from "./error.api-request.class";
 import {IAwsLambdaApiHandlerFactory} from "./handler-factory.interface";
 import {IApiOutput} from "./output.interface";
@@ -28,11 +29,7 @@ export class AwsLambdaApiHandlerFactory implements IAwsLambdaApiHandlerFactory {
 	 * - admits async functions.
 	 * function.
 	 */
-	public readonly callbacks: {
-		onError: Array<(err: Error) => (Promise<any> | any)>;
-	} = {
-		onError: [],
-	};
+	public readonly callbacks = new Callbacks();
 
 	private corsConfig: {
 		allowCredentials?: boolean,

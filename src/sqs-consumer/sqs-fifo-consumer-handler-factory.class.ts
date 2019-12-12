@@ -1,16 +1,11 @@
 import {Lambda, SQS} from "aws-sdk";
 import IContext from "../context-interface";
 import AwsLambdaHandlerFactory from "../handler-factory.class";
+import Callbacks from "./callbacks.class";
 
-export class SqsFifoConsumerHandlerFactory<Message> {
+export default class SqsFifoConsumerHandlerFactory<Message> {
 
-	public readonly callbacks: {
-		onMessageConsumptionError: Array<(e: Error, m: SQS.Message) => unknown>,
-		onConsumingMessage: Array<(m: Message) => unknown>,
-	} = {
-		onConsumingMessage: [],
-		onMessageConsumptionError: [],
-	};
+	public readonly callbacks = new Callbacks();
 
 	private processedMessages: SQS.Message[];
 	private ctx: IContext;
