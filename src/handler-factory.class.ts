@@ -3,11 +3,7 @@ import {IContext} from "./context-interface";
 import {HandlerCustomError} from "./error.handler-custom.class";
 import IHandlerFactory, {ICallbacks} from "./handler-facotory.interface";
 
-export type LambdaHandler<Input, Output> = (
-	input: Input,
-	ctx: IContext,
-	cb: (error?: Error, data?: Output) => unknown,
-) => unknown;
+export type LambdaHandler<Input, Output> = (input: Input, ctx: IContext) => Promise<Output>;
 
 /**
  * Emitted event types
@@ -73,7 +69,7 @@ export class AwsLambdaHandlerFactory implements IHandlerFactory {
 	 * @param handler Your own handler
 	 */
 	public build<I, O>(handler: (event: I, ctx: IContext) => Promise<O> | O): LambdaHandler<I, O> {
-		return async (input, ctx, cb) => {
+		return async (input, ctx) => {
 			await Promise.all(this.callbacks.initialize.map((c) => c(input, ctx)));
 			this.eventEmitter.emit(handlerEventType.called, input, ctx);
 			this.controlTimeOut(ctx);
@@ -85,19 +81,24 @@ export class AwsLambdaHandlerFactory implements IHandlerFactory {
 				this.eventEmitter.emit(handlerEventType.succeeded, response);
 				this.eventEmitter.emit(handlerEventType.finished);
 				this.clearTimeOutControl();
-				cb(null, response);
+
+				return response;
 			} catch (err) {
-				await Promise.all(this.callbacks.handleError.map((c) => c(err, ctx)));
-				this.eventEmitter.emit(handlerEventType.error, err);
-				this.eventEmitter.emit(handlerEventType.finished);
-				this.clearTimeOutControl();
-				if (err instanceof HandlerCustomError) {
-					cb(null, err.response);
-				} else {
-					cb(err);
-				}
+				return this.handleError(err, ctx);
 			}
 		};
+	}
+
+	private async handleError(err: Error, ctx: IContext) {
+		await Promise.all(this.callbacks.handleError.map((c) => c(err, ctx)));
+		this.eventEmitter.emit(handlerEventType.error, err);
+		this.eventEmitter.emit(handlerEventType.finished);
+		this.clearTimeOutControl();
+		if (err instanceof HandlerCustomError) {
+			return err.response;
+		} else {
+			throw err;
+		}
 	}
 
 	private controlTimeOut(ctx: IContext) {

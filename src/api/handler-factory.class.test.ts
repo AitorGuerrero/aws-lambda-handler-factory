@@ -20,23 +20,23 @@ describe("Having a api handler factory", () => {
 	describe("and a simple handler defined", () => {
 		beforeEach(() => handler = apiFactory.build(async () => ({})));
 		it("should return empty body", async () => {
-			const response = await asyncHandler(handler)(null, ctx);
+			const response = await handler(null, ctx);
 			expect(response.body).to.be.equal("");
 		});
 		it("should return empty headers", async () => {
-			const response = await asyncHandler(handler)(null, ctx);
+			const response = await handler(null, ctx);
 			expect(typeof response.headers).to.be.eq("object");
 			expect(Object.keys(response.headers).length).to.be.eq(0);
 		});
 		it("should return 200 status code", async () => {
-			const response = await asyncHandler(handler)(null, ctx);
+			const response = await handler(null, ctx);
 			expect(response.statusCode).to.be.eq(200);
 		});
 	});
 	describe("and returning a object as a body", () => {
 		beforeEach(() => handler = apiFactory.build(async () => ({body: {result: "ok"}})));
 		it("should return the body stringified", async () => {
-			const response = await asyncHandler(handler)(null, ctx);
+			const response = await handler(null, ctx);
 			expect(response.body).to.be.equal("{\"result\":\"ok\"}");
 		});
 	});
@@ -52,20 +52,20 @@ describe("Having a api handler factory", () => {
 		it("should await for onError callback", async () => {
 			let onErrorCalled = false;
 			apiFactory.callbacks.onError.push(() => onErrorCalled = true);
-			try {await asyncHandler(handler)(null, ctx);}
+			try {await handler(null, ctx);}
 			catch (err) {}
 			expect(onErrorCalled).to.be.equal(true);
 		});
 		it("should return server error",  async () => {
 			let response: any;
-			try {response = await asyncHandler(handler)(null, ctx);}
+			try {response = await handler(null, ctx);}
 			catch (err) {}
 			expect(response.statusCode).to.be.equal(500);
 		});
 		it("should emit error event", async () => {
 			let emittedEvent: Error = null;
 			apiFactory.eventEmitter.on("error", (e) => emittedEvent = e);
-			try {await asyncHandler(handler)(null, ctx);}
+			try {await handler(null, ctx);}
 			catch (err) {}
 			expect(emittedEvent).to.be.equal(error);
 		});
@@ -73,7 +73,7 @@ describe("Having a api handler factory", () => {
 			let called = false;
 			factory.eventEmitter.on(handlerEventType.succeeded, () => called = true);
 			try {
-				await asyncHandler(handler)(null, ctx);
+				await handler(null, ctx);
 			} catch (e) {}
 			expect(called).to.be.false;
 		});
@@ -87,17 +87,12 @@ describe("Having a api handler factory", () => {
 			});
 		});
 		it("should return 404 status code", async () => {
-			const response = await asyncHandler(handler)(null, ctx);
+			const response = await handler(null, ctx);
 			expect(response.statusCode).to.be.eq(ApiRequestNotFoundError.statusCode);
 		});
 		it("should return custom message", async () => {
-			const response = await asyncHandler(handler)(null, ctx);
+			const response = await handler(null, ctx);
 			expect(response.body).to.be.eq(myCustomMessage);
 		});
 	});
 });
-
-function asyncHandler<I, O>(handler: LambdaHandler<I, O>) {
-	return (input: I, ctx: IContext) =>
-		new Promise<O>((rs, rj) => handler(input, ctx, (err, data) => err ? rj(err) : rs(data)));
-}

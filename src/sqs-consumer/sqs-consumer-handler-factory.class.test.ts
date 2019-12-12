@@ -29,14 +29,12 @@ describe("Having a sqs consumer", () => {
 		});
 		it("should process all the messages", async () => {
 			const processedMessages: number[] = [];
-			await new Promise((rs, rj) => factory.build<number>(queueName, async (next) => {
+			await factory.build<number>(queueName, async (next) => {
 				let item;
 				while (item = await next()) {
 					processedMessages.push(item);
 				}
-			})(null, {
-				getRemainingTimeInMillis: () => 2000,
-			} as any, (err) => err ? rj(err) : rs()));
+			})(null, {getRemainingTimeInMillis: () => 2000} as any);
 			expect(processedMessages.length).to.be.eq(6);
 			expect(processedMessages[0]).to.be.eq(1);
 			expect(processedMessages[1]).to.be.eq(2);
@@ -46,17 +44,17 @@ describe("Having a sqs consumer", () => {
 			expect(processedMessages[5]).to.be.eq(6);
 		});
 		it("should delete all the messages", async () => {
-			await new Promise((rs, rj) => factory.build(queueName, async (next) => {
+			await factory.build(queueName, async (next) => {
 				let item: any;
 				do {
 					item = await next();
 				} while (item !== undefined);
-			})(null, ctx as any, (err) => err ? rj(err) : rs()));
+			})(null, ctx as any);
 			expect(sqs.getAvailableMessages(queueName).length).to.be.eq(0);
 		});
 		describe("and the second message fails", () => {
 			it("should remove all messages except the second", async () => {
-				await new Promise((rs, rj) => factory.build(queueName, async (next) => {
+				await factory.build(queueName, async (next) => {
 					let item: any;
 					do {
 						item = await next();
@@ -64,7 +62,7 @@ describe("Having a sqs consumer", () => {
 							throw new Error();
 						}
 					} while (item !== undefined);
-				})(null, ctx as any, (err) => err ? rj(err) : rs()));
+				})(null, ctx as any);
 				sqs.resetInFlight(queueName);
 				const availableMessages = sqs.getAvailableMessages(queueName);
 				expect(availableMessages.length).to.be.eq(1);
