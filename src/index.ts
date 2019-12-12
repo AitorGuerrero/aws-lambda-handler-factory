@@ -4,9 +4,8 @@ import HandlerCustomError from "./error.handler-custom.class";
 import IHandlerFactory from "./handler-facotory.interface";
 import AwsLambdaHandlerFactory, { handlerEventType, LambdaHandler } from "./handler-factory.class";
 
-export default AwsLambdaHandlerFactory;
-
 export {
+	AwsLambdaHandlerFactory,
 	IHandlerFactory,
 	ICallbacks,
 	ICallback,
