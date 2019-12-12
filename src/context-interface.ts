@@ -3,7 +3,7 @@
  * For more info:
  * https://docs.aws.amazon.com/lambda/latest/dg/nodejs-prog-model-context.html
  */
-export interface IContext {
+export default interface IContext {
 	done: () => void;
 	succeed: () => void;
 	fail: () => void;

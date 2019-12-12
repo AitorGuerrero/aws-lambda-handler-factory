@@ -1,5 +1,5 @@
-export * from "./src/handler-factory.class";
-export * from "./src/error.handler-custom.class";
-export * from "./src/context-interface";
-export * from "./src/api";
-export * from "./src/sqs-consumer";
+import * as api from "./src/api";
+import * as sqsConsumer from "./src/sqs-consumer";
+
+export * from "./src";
+export {api, sqsConsumer};

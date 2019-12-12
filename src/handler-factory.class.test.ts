@@ -2,9 +2,9 @@
 
 import {expect} from "chai";
 import {beforeEach, describe} from "mocha";
-import {IContext} from "./context-interface";
-import {HandlerCustomError} from "./error.handler-custom.class";
-import {AwsLambdaHandlerFactory, handlerEventType, LambdaHandler} from "./handler-factory.class";
+import IContext from "./context-interface";
+import HandlerCustomError from "./error.handler-custom.class";
+import AwsLambdaHandlerFactory, {handlerEventType, LambdaHandler} from "./handler-factory.class";
 
 describe("Having a handler factory", () => {
 

@@ -1,7 +1,7 @@
 import {SQS} from "aws-sdk";
 import {clearTimeout, setTimeout} from "timers";
-import {IContext} from "../context-interface";
-import {AwsLambdaHandlerFactory} from "../handler-factory.class";
+import IContext from "../context-interface";
+import AwsLambdaHandlerFactory from "../handler-factory.class";
 
 export class SqsConsumerHandlerFactory {
 

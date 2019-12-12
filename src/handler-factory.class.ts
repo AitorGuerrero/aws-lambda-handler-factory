@@ -1,7 +1,8 @@
 import {EventEmitter} from "events";
-import {IContext} from "./context-interface";
-import {HandlerCustomError} from "./error.handler-custom.class";
-import IHandlerFactory, {ICallbacks} from "./handler-facotory.interface";
+import ICallbacks from "./callbacks.interface";
+import IContext from "./context-interface";
+import HandlerCustomError from "./error.handler-custom.class";
+import IHandlerFactory from "./handler-facotory.interface";
 
 export type LambdaHandler<Input, Output> = (input: Input, ctx: IContext) => Promise<Output>;
 
@@ -34,7 +35,7 @@ export enum handlerEventType {
  * ```
  *
  */
-export class AwsLambdaHandlerFactory implements IHandlerFactory {
+export default class AwsLambdaHandlerFactory implements IHandlerFactory {
 
 	/**
 	 * Emits the events defined in the HandlerEventType enum

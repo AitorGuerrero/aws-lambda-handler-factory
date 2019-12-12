@@ -1,8 +1,8 @@
 /* tslint:disable */
 import {expect} from "chai";
 import {beforeEach, describe} from "mocha";
-import {AwsLambdaHandlerFactory, handlerEventType, LambdaHandler} from "../handler-factory.class";
-import {IContext} from "../context-interface";
+import AwsLambdaHandlerFactory, {handlerEventType, LambdaHandler} from "../handler-factory.class";
+import IContext from "../context-interface";
 import {ApiRequestNotFoundError} from "./error.not-found.class";
 import {AwsLambdaApiHandlerFactory} from "./handler-factory.class";
 
