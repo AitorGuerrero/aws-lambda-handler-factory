@@ -5,10 +5,10 @@
   "main": "index.js",
   "scripts": {
     "build": "tsc",
-    "test": "nyc --reporter=html mocha ./**/*.test.js",
+    "test": "nyc mocha ./**/*.test.js",
     "style": "tslint -p ."
   },
-  "author": "Aitor Guerrero <aitor.guerrero.dev@gmail.com>",
+  "author": "Aitor Guerrero <aitgud.dev@gmail.com>",
   "license": "ISC",
   "devDependencies": {
     "@types/chai": "^4.2.7",
@@ -26,5 +26,10 @@
     "hooks": {
       "pre-commit": "yarn build && yarn style && yarn test"
     }
+  },
+  "nyc": {
+    "extends": "@istanbuljs/nyc-config-typescript",
+    "all": true,
+    "check-coverage": false
   }
 }
