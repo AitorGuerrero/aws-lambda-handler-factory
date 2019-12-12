@@ -2,9 +2,10 @@ import {EventEmitter} from "events";
 import Callbacks from "./callbacks.class";
 import IContext from "./context-interface";
 import HandlerCustomError from "./error.handler-custom.class";
+import TimeoutReachedError from "./error.timeout-reached.class";
 import IHandlerFactory from "./handler-facotory.interface";
 
-export type LambdaHandler<Input, Output> = (input: Input, ctx: IContext) => Promise<Output>;
+export type LambdaHandler<Input, Output> = (input: Input, ctx: IContext) => Output | Error | Promise<Output | Error>;
 
 /**
  * Emitted event types
@@ -64,32 +65,47 @@ export default class AwsLambdaHandlerFactory implements IHandlerFactory {
 	 * @generic O The output emitted by the handler
 	 * @param handler Your own handler
 	 */
-	public build<I, O>(handler: (event: I, ctx: IContext) => Promise<O> | O): LambdaHandler<I, O> {
+	public build<I, O>(handler: LambdaHandler<I, O>): LambdaHandler<I, O> {
 		return async (input, ctx) => {
-			await Promise.all(this.callbacks.initialize.map((c) => c(input, ctx)));
-			this.eventEmitter.emit(handlerEventType.called, input, ctx);
-			this.controlTimeOut(ctx);
 			try {
-				const response = await handler(input, ctx);
-				await Promise.all(this.callbacks.persist.map((c) => c(response, ctx)));
-				this.eventEmitter.emit(handlerEventType.persisted, response);
-				await Promise.all(this.callbacks.flush.map((c) => c(response, ctx)));
-				this.eventEmitter.emit(handlerEventType.succeeded, response);
-				this.eventEmitter.emit(handlerEventType.finished);
-				this.clearTimeOutControl();
-
-				return response;
+				return await this.executeTimeControlledHandler(input, ctx, handler);
 			} catch (err) {
-				return this.handleError(err, ctx);
+				return await this.handleError(err, ctx);
 			}
 		};
 	}
 
+	private async executeTimeControlledHandler<I, O>(input: I, ctx: IContext, handler: LambdaHandler<I, O>) {
+		const response = await Promise.race([
+			this.executeHandler(input, ctx, handler),
+			this.timeOut(this.getRemainingTime(ctx)),
+		]);
+		if (response instanceof Error) {
+			throw response;
+		}
+		this.clearTimeOutControl();
+
+		return response;
+	}
+
+	private async executeHandler<I, O>(input: I, ctx: IContext, handler: LambdaHandler<I, O>) {
+		await Promise.all(this.callbacks.initialize.map((c) => c(input, ctx)));
+		this.eventEmitter.emit(handlerEventType.called, input, ctx);
+		const response = await handler(input, ctx);
+		await Promise.all(this.callbacks.persist.map((c) => c(response, ctx)));
+		this.eventEmitter.emit(handlerEventType.persisted, response);
+		await Promise.all(this.callbacks.flush.map((c) => c(response, ctx)));
+		this.eventEmitter.emit(handlerEventType.succeeded, response);
+		this.eventEmitter.emit(handlerEventType.finished);
+
+		return response;
+	}
+
 	private async handleError(err: Error, ctx: IContext) {
+		this.clearTimeOutControl();
 		await Promise.all(this.callbacks.handleError.map((c) => c(err, ctx)));
 		this.eventEmitter.emit(handlerEventType.error, err);
 		this.eventEmitter.emit(handlerEventType.finished);
-		this.clearTimeOutControl();
 		if (err instanceof HandlerCustomError) {
 			return err.response;
 		} else {
@@ -97,15 +113,17 @@ export default class AwsLambdaHandlerFactory implements IHandlerFactory {
 		}
 	}
 
-	private controlTimeOut(ctx: IContext) {
+	private timeOut(remainingTime: number) {
+		return new Promise((rs) => {
+			this.timer = setTimeout(() => rs(new TimeoutReachedError()), remainingTime <= 0 ? 0 : remainingTime);
+		});
+	}
+
+	private getRemainingTime(ctx: IContext) {
 		if (ctx.getRemainingTimeInMillis === undefined) {
 			return;
 		}
-		const remainingTime = ctx.getRemainingTimeInMillis() - this.timeOutSecureMargin;
-		if (remainingTime <= 0) {
-			return;
-		}
-		this.timer = setTimeout(() => this.eventEmitter.emit(handlerEventType.timeOut), remainingTime);
+		return ctx.getRemainingTimeInMillis() - this.timeOutSecureMargin;
 	}
 
 	private clearTimeOutControl() {

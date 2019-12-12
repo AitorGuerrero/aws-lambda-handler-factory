@@ -10,7 +10,7 @@ describe("Having a api handler factory", () => {
 	let factory: AwsLambdaHandlerFactory;
 	let apiFactory: AwsLambdaApiHandlerFactory;
 	let handler: LambdaHandler<any, any>;
-	const ctx = {getRemainingTimeInMillis: () => 0} as IContext;
+	const ctx = {getRemainingTimeInMillis: () => 1000 * 60} as IContext;
 	beforeEach(() => {
 		factory = new AwsLambdaHandlerFactory();
 		factory.eventEmitter.on('error', () => null);
@@ -52,29 +52,24 @@ describe("Having a api handler factory", () => {
 		it("should await for onError callback", async () => {
 			let onErrorCalled = false;
 			apiFactory.callbacks.onError.push(() => onErrorCalled = true);
-			try {await handler(null, ctx);}
-			catch (err) {}
+			await handler(null, ctx)
 			expect(onErrorCalled).to.be.equal(true);
 		});
 		it("should return server error",  async () => {
 			let response: any;
-			try {response = await handler(null, ctx);}
-			catch (err) {}
+			response = await handler(null, ctx);
 			expect(response.statusCode).to.be.equal(500);
 		});
 		it("should emit error event", async () => {
 			let emittedEvent: Error = null;
 			apiFactory.eventEmitter.on("error", (e) => emittedEvent = e);
-			try {await handler(null, ctx);}
-			catch (err) {}
+			await handler(null, ctx);
 			expect(emittedEvent).to.be.equal(error);
 		});
 		it("should not emit handler factory 'on success' event", async () => {
 			let called = false;
 			factory.eventEmitter.on(handlerEventType.succeeded, () => called = true);
-			try {
-				await handler(null, ctx);
-			} catch (e) {}
+			await handler(null, ctx);
 			expect(called).to.be.false;
 		});
 	});
