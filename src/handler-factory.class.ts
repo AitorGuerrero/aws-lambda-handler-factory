@@ -49,23 +49,23 @@ export class AwsLambdaHandlerFactory implements IHandlerFactory {
 	public readonly eventEmitter = new EventEmitter();
 
 	/**
-	 * Functions executed in some execution points.
-	 * - To add some action, push the callback function to the array
-	 * - admits async functions.
-	 */
-	public readonly callbacks: ICallbacks = {
-		flush: [],
-		handleError: [],
-		initialize: [],
-		persist: [],
-	};
-
-	/**
 	 * The security timeout ms margin to emit the timeOut event.
 	 */
 	public timeOutSecureMargin = 500;
 
 	private timer: any;
+
+	constructor(
+		/**
+		 * Functions executed in some execution points.
+		 */
+		public readonly callbacks: ICallbacks = {
+			flush: [],
+			handleError: [],
+			initialize: [],
+			persist: [],
+		},
+	) {}
 
 	/**
 	 * @generic I The input received by the handler
