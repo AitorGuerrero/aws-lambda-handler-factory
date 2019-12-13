@@ -1,6 +1,7 @@
 import {LambdaHandler} from "../handler-factory.class";
 import {IApiInput} from "./api-input.interface";
 import IEndpointsMap from "./endpoints-map.interface";
+import {ApiRequestNotFoundError} from "./error.not-found.class";
 import {ApiHandler, AwsLambdaApiHandlerFactory} from "./handler-factory.class";
 import HttpMethod from "./http-methods.enum";
 import {IApiOutput} from "./output.interface";
@@ -89,12 +90,12 @@ export class AwsLambdaProxyApiHandlerFactory {
 		return this.apiHandlerFactory.build(async (event, ctx) => {
 			const handlerConfig = this.getHandlerConfigFromInput(event);
 			if (handlerConfig === undefined) {
-				return {body: "", headers: {}, statusCode: 404};
+				throw new ApiRequestNotFoundError();
 			}
 			const handler = AwsLambdaProxyApiHandlerFactory.getHandlerFromInput(event, handlerConfig);
 			const parsedEvent = this.composeEvent(event, handlerConfig);
 			if (handler === undefined) {
-				return {body: "", headers: {}, statusCode: 404};
+				throw new ApiRequestNotFoundError();
 			}
 			const response = await handler(parsedEvent, ctx);
 

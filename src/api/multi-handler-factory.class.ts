@@ -1,6 +1,7 @@
 import {LambdaHandler} from "../handler-factory.class";
 import {IApiInput} from "./api-input.interface";
 import IEndpointsMap from "./endpoints-map.interface";
+import {ApiRequestNotFoundError} from "./error.not-found.class";
 import {AwsLambdaApiHandlerFactory} from "./handler-factory.class";
 import {IApiOutput} from "./output.interface";
 
@@ -17,11 +18,7 @@ export class AwsLambdaApiMultiHandlerFactory {
 		return this.apiHandlerFactory.build(async (event, ctx) => {
 			const handler = endpoints[event.resource][event.httpMethod];
 			if (handler === undefined) {
-				return {
-					body: "",
-					headers: {},
-					statusCode: 404,
-				};
+				throw new ApiRequestNotFoundError();
 			}
 			const response = await handler(event, ctx);
 
