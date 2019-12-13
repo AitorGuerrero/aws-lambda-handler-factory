@@ -1,6 +1,7 @@
 /* tslint:disable */
 import {expect} from "chai";
 import {beforeEach, describe} from "mocha";
+import HandlerCustomError from "../error.handler-custom.class";
 import AwsLambdaHandlerFactory, {handlerEventType, LambdaHandler} from "../handler-factory.class";
 import IContext from "../context-interface";
 import {ApiRequestNotFoundError} from "./error.not-found.class";
@@ -13,9 +14,7 @@ describe("Having a api handler factory", () => {
 	const ctx = {getRemainingTimeInMillis: () => 1000 * 60} as IContext;
 	beforeEach(() => {
 		factory = new AwsLambdaHandlerFactory();
-		factory.eventEmitter.on('error', () => null);
 		apiFactory = new AwsLambdaApiHandlerFactory(factory);
-		apiFactory.eventEmitter.on('error', () => null);
 	});
 	describe("and a simple handler defined", () => {
 		beforeEach(() => handler = apiFactory.build(async () => ({})));
@@ -43,7 +42,6 @@ describe("Having a api handler factory", () => {
 	describe("and the handler fails with unknown error", () => {
 		const error = new Error("thrownError");
 		beforeEach(() => {
-			apiFactory.eventEmitter.on("error", () => null);
 			handler = apiFactory.build(async () => {
 				await new Promise((rs) => setTimeout(rs, 0));
 				throw error;
@@ -61,14 +59,20 @@ describe("Having a api handler factory", () => {
 			expect(response.statusCode).to.be.equal(500);
 		});
 		it("should emit error event", async () => {
-			let emittedEvent: Error = null;
-			apiFactory.eventEmitter.on("error", (e) => emittedEvent = e);
+			let emittedErrorEvents: HandlerCustomError<unknown>[] = [];
+			apiFactory.eventEmitter.on(handlerEventType.error, (e) => {
+				emittedErrorEvents.push(e);
+
+				throw e;
+			});
 			await handler(null, ctx);
-			expect(emittedEvent).to.be.equal(error);
+			expect(emittedErrorEvents).to.be.length(1);
+			expect(emittedErrorEvents[0]).to.be.instanceOf(HandlerCustomError);
+			expect(emittedErrorEvents[0].originalError).to.be.eql(error);
 		});
 		it("should not emit handler factory 'on success' event", async () => {
 			let called = false;
-			factory.eventEmitter.on(handlerEventType.succeeded, () => called = true);
+			apiFactory.eventEmitter.on(handlerEventType.succeeded, () => called = true);
 			await handler(null, ctx);
 			expect(called).to.be.false;
 		});
@@ -76,7 +80,6 @@ describe("Having a api handler factory", () => {
 	describe('and the handler fails with Api Request error', () => {
 		const myCustomMessage = "myCustomMessage";
 		beforeEach(() => {
-			apiFactory.eventEmitter.on("error", () => null);
 			handler = apiFactory.build(async () => {
 				throw new ApiRequestNotFoundError(myCustomMessage);
 			});

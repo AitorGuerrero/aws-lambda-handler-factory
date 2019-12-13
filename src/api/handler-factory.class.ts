@@ -43,6 +43,7 @@ export class AwsLambdaApiHandlerFactory implements IAwsLambdaApiHandlerFactory {
 			allowedOrigin: string,
 		},
 	) {
+		this.eventEmitter = handlerFactory.eventEmitter;
 		this.corsConfig = corsConfig || {};
 	}
 

@@ -49,12 +49,14 @@ describe("Having a handler factory", () => {
 	describe("and the handler fails", () => {
 		const error = new Error("ERROR");
 		beforeEach(() => {
-			factory.eventEmitter.on("error", () => null);
 			handle = factory.build(() => Promise.reject(error));
 		});
 		it("should emit the error", async () => {
 			let emittedErr: any = null;
-			factory.eventEmitter.on("error", (err) => emittedErr = err);
+			factory.eventEmitter.on(handlerEventType.error, (err) => {
+				emittedErr = err;
+				throw err;
+			});
 			try {
 				await handle(null, ctx);
 				expect.fail();
@@ -110,17 +112,17 @@ describe("Having a handler factory", () => {
 	describe("and the handler fails with custom response", () => {
 		const errorContent = "ERROR CONTENT";
 		const error = new HandlerCustomError(errorContent);
-		beforeEach(() => {
-			factory.eventEmitter.on("error", () => null);
-			handle = factory.build(() => Promise.reject(error));
-		});
+		beforeEach(() => handle = factory.build(() => Promise.reject(error)));
 		it("should return the error content", async () => {
 			const response = await handle(null, ctx);
 			expect(response).to.be.eql(errorContent);
 		});
 		it("should emit the error", async () => {
 			let emittedErr: any = null;
-			factory.eventEmitter.on("error", (err) => emittedErr = err);
+			factory.eventEmitter.on(handlerEventType.error, (err) => {
+				emittedErr = err;
+				throw err;
+			});
 			await handle(null, ctx);
 			expect(emittedErr).to.be.eq(error);
 		});
