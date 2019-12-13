@@ -56,7 +56,6 @@ export class AwsLambdaApiHandlerFactory implements IAwsLambdaApiHandlerFactory {
 				return this.composeResponse(await apiHandler(input, ctx));
 			} catch (err) {
 				await Promise.all(this.callbacks.onError.map((cb) => cb(err)));
-				await this.eventEmitter.emit("error", err);
 				this.handleError(err);
 			}
 		});
