@@ -71,9 +71,11 @@ export default class AwsLambdaHandlerFactory implements IHandlerFactory {
 				try {
 					return await this.executeTimeControlledHandler(input, ctx, handler);
 				} catch (err) {
+					this.clearTimeOutControl();
 					return this.eventEmitter.emit(handlerEventType.error, err);
 				}
 			} catch (err) {
+				this.clearTimeOutControl();
 				return await this.handleError(err, ctx);
 			}
 		};
@@ -106,7 +108,6 @@ export default class AwsLambdaHandlerFactory implements IHandlerFactory {
 	}
 
 	private async handleError(err: Error, ctx: IContext) {
-		this.clearTimeOutControl();
 		await Promise.all(this.callbacks.handleError.map((c) => c(err, ctx)));
 		this.eventEmitter.emit(handlerEventType.finished);
 		if (err instanceof HandlerCustomError) {
