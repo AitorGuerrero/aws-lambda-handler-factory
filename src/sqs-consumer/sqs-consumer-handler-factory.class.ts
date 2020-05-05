@@ -6,9 +6,9 @@ import AwsLambdaHandlerFactory from "../handler-factory.class";
 export default class SqsConsumerHandlerFactory {
 
 	public readonly callbacks: {
-		onInitBatchProcess: Array<() => Promise<unknown>>;
-		onBatchProcessed: Array<() => Promise<unknown>>;
-		onMessageError: Array<(message: any, err: Error) => Promise<unknown>>;
+		onInitBatchProcess: (() => Promise<unknown>)[];
+		onBatchProcessed: (() => Promise<unknown>)[];
+		onMessageError: ((message: any, err: Error) => Promise<unknown>)[];
 	} = {
 		onBatchProcessed: [],
 		onInitBatchProcess: [],

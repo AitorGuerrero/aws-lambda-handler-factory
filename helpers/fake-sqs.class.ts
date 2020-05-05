@@ -10,12 +10,12 @@ export class FakeSqs {
 	private nextId = 0;
 	private queues: {
 		[name: string]: {
-			batches: Array<{
+			batches: {
 				message: IBasicFakeMessage,
 				inFlight: boolean,
 				retries: number,
 				deleted: boolean,
-			}>;
+			}[];
 			batchLength: number;
 			fifoMode: boolean;
 		};

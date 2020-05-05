@@ -40,7 +40,7 @@ export class AwsLambdaApiHandlerFactory implements IAwsLambdaApiHandlerFactory {
 		private handlerFactory: AwsLambdaHandlerFactory,
 		corsConfig?: {
 			allowCredentials?: boolean,
-			allowedOrigin: string,
+			allowedOrigin?: string,
 		},
 	) {
 		this.eventEmitter = handlerFactory.eventEmitter;

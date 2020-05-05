@@ -52,45 +52,30 @@ describe("Having a handler factory", () => {
 			handle = factory.build(() => Promise.reject(error));
 		});
 		it("should emit the error", async () => {
-			let emittedErr: any = null;
+			let emittedErr: Error = null;
 			factory.eventEmitter.on(handlerEventType.error, (err) => {
 				emittedErr = err;
 				throw err;
 			});
-			try {
-				await handle(null, ctx);
-				expect.fail();
-			} catch (err) {
-				expect(emittedErr).to.be.eq(error);
-			}
+			await handle(null, ctx).catch((e: Error) => emittedErr = e);
+			expect(emittedErr).to.be.eq(error);
 		});
 		it("should call the handler callback with the error", async () => {
-			try {
-				await handle(null, ctx);
-				expect.fail();
-			} catch (err) {
-				expect(err).to.be.eq(error);
-			}
+			let emittedErr: Error = null;
+			await handle(null, ctx).catch((e: Error) => emittedErr = e);
+			expect(emittedErr).to.be.eq(error);
 		});
 		it("should emit finished event", async () => {
 			let emittedFinished = false;
 			factory.eventEmitter.on(handlerEventType.finished, () => emittedFinished = true);
-			try {
-				await handle(null, ctx);
-				expect.fail();
-			} catch (err) {
-				expect(emittedFinished).to.be.true;
-			}
+			await handle(null, ctx).catch((): void => null);
+			expect(emittedFinished).to.be.true;
 		});
 		it("should not emit succeeded event", async () => {
 			let emitted = false;
 			factory.eventEmitter.on(handlerEventType.succeeded, () => emitted = true);
-			try {
-				await handle(null, ctx);
-				expect.fail();
-			} catch (err) {
-				expect(emitted).to.be.false;
-			}
+			await handle(null, ctx).catch((): void => null);
+			expect(emitted).to.be.false;
 		});
 		it("should call onError callback after calling the handler", async () => {
 			let callBackCalled = false;
@@ -100,13 +85,9 @@ describe("Having a handler factory", () => {
 				callbackCalledBeforeHandler = callBackCalled === false;
 				throw error;
 			});
-			try {
-				await handle(null, ctx);
-				expect.fail("Should fail");
-			} catch (err) {
-				expect(callBackCalled).to.be.true;
-				expect(callbackCalledBeforeHandler).to.be.true;
-			}
+			await handle(null, ctx).catch((): void => null);
+			expect(callBackCalled).to.be.true;
+			expect(callbackCalledBeforeHandler).to.be.true;
 		});
 	});
 	describe("and the handler fails with custom response", () => {

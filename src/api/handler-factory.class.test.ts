@@ -2,10 +2,12 @@
 import {expect} from "chai";
 import {beforeEach, describe} from "mocha";
 import HandlerCustomError from "../error.handler-custom.class";
+import TimeoutReachedError from "../error.timeout-reached.class";
 import AwsLambdaHandlerFactory, {handlerEventType, LambdaHandler} from "../handler-factory.class";
 import IContext from "../context-interface";
 import {ApiRequestNotFoundError} from "./error.not-found.class";
 import {AwsLambdaApiHandlerFactory} from "./handler-factory.class";
+import {IApiOutput} from "./output.interface";
 
 describe("Having a api handler factory", () => {
 	let factory: AwsLambdaHandlerFactory;
@@ -91,6 +93,35 @@ describe("Having a api handler factory", () => {
 		it("should return custom message", async () => {
 			const response = await handler(null, ctx);
 			expect(response.body).to.be.eq(myCustomMessage);
+		});
+	});
+	describe('and cors config in the factory', () => {
+		const allowCredentials = true;
+		const allowedOrigin = 'allowedOrigin';
+		beforeEach(() => apiFactory = new AwsLambdaApiHandlerFactory(factory, {
+			allowCredentials,
+			allowedOrigin,
+		}));
+		it('Should add headers in the response', async () => {
+			const response = await apiFactory.build(async () => ({}))(null, ctx) as IApiOutput;
+			expect(response.headers["Access-Control-Allow-Credentials"]).to.be.equal(allowCredentials);
+			expect(response.headers["Access-Control-Allow-Origin"]).to.be.equal(allowedOrigin);
+		});
+	});
+	describe('and the context have no getRemainingTimeInMillis method', () => {
+		beforeEach(() => ctx.getRemainingTimeInMillis = undefined);
+		it('should not fail', async () => {
+			const response = await apiFactory.build(() => ({}))(null, ctx);
+			expect(response).not.to.be.instanceof(Error);
+		});
+	});
+	describe('and arrives timeout', () => {
+		beforeEach(() => ctx.getRemainingTimeInMillis = () => 1);
+		it('should fail', async () => {
+			let error: Error = null;
+			await (apiFactory.build(() => new Promise((rs) => setTimeout(rs, 100)))(null, ctx) as Promise<unknown>)
+				.catch((e: Error) => error = e);
+			expect(error).to.be.instanceof(TimeoutReachedError);
 		});
 	});
 });
