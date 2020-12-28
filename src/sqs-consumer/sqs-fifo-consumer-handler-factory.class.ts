@@ -75,7 +75,7 @@ export default class SqsFifoConsumerHandlerFactory<Message> {
 	}
 
 	private callContinue() {
-		return new Promise((rs, rj) => this.lambda.invoke({
+		return this.lambda.invoke({
 			FunctionName: this.ctx.functionName,
 			InvocationType: "Event",
 			Payload: JSON.stringify({
@@ -87,7 +87,7 @@ export default class SqsFifoConsumerHandlerFactory<Message> {
 				},
 				retryMessagesGet: true,
 			}),
-		}, (err) => err ? rj(err) : rs()));
+		}).promise();
 	}
 
 	private async flush() {
