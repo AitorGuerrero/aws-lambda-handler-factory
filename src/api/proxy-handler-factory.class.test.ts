@@ -1,7 +1,7 @@
 /* tslint:disable:no-unused-expression */
 import {expect} from "chai";
 import {beforeEach, describe} from "mocha";
-import AwsLambdaHandlerFactory, {LambdaHandler} from "../handler-factory.class";
+import AwsLambdaHandlerFactory, {Handler} from "../handler-factory.class";
 import {IApiInput} from "./api-input.interface";
 import {AwsLambdaApiHandlerFactory} from "./handler-factory.class";
 import HttpMethod from "./http-methods.enum";
@@ -20,7 +20,7 @@ describe("Having a proxy api handler factory", () => {
 	let factory: AwsLambdaHandlerFactory;
 	let apiFactory: AwsLambdaApiHandlerFactory;
 	let multiEndpointFactory: AwsLambdaProxyApiHandlerFactory;
-	let handle: LambdaHandler<any, any>;
+	let handle: Handler<any, any>;
 	let input: IApiInput;
 	let parsedInput: IApiInput;
 	let output: IApiOutput;

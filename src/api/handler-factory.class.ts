@@ -1,6 +1,6 @@
 import {EventEmitter} from "events";
 import HandlerCustomError from "../error.handler-custom.class";
-import AwsLambdaHandlerFactory, {LambdaHandler} from "../handler-factory.class";
+import AwsLambdaHandlerFactory, {Handler} from '../handler-factory.class';
 import {IApiInput} from "./api-input.interface";
 import Callbacks from "./callbacks.class";
 import {ApiRequestError} from "./error.api-request.class";
@@ -50,7 +50,7 @@ export class AwsLambdaApiHandlerFactory {
 	 * Creates a basic handler.
 	 * @param apiHandler
 	 */
-	public build(apiHandler: ApiHandler): LambdaHandler<IApiInput, IApiOutput> {
+	public build(apiHandler: ApiHandler): Handler<IApiInput, IApiOutput> {
 		return this.handlerFactory.build(async (input: IApiInput, ctx: Context) => {
 			try {
 				return this.composeResponse(await apiHandler(input, ctx));

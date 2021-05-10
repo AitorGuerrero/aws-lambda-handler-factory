@@ -1,10 +1,10 @@
-import {LambdaHandler} from "../handler-factory.class";
 import {IApiInput} from "./api-input.interface";
 import IEndpointsMap from "./endpoints-map.interface";
 import {ApiRequestNotFoundError} from "./error.not-found.class";
 import {ApiHandler, AwsLambdaApiHandlerFactory} from "./handler-factory.class";
 import HttpMethod from "./http-methods.enum";
 import {IApiOutput} from "./output.interface";
+import {Handler} from '../handler-factory.class';
 
 interface IEndpointConfig {
 	path: string;
@@ -74,9 +74,9 @@ export class AwsLambdaProxyApiHandlerFactory {
 		private apiHandlerFactory: AwsLambdaApiHandlerFactory,
 	) {}
 
-	public build(basePathMapping: string, endpoints: IEndpointsMap): LambdaHandler<IApiInput, IApiOutput>;
-	public build(endpoints: IEndpointsMap): LambdaHandler<IApiInput, IApiOutput>;
-	public build(a: string | IEndpointsMap, b?: IEndpointsMap): LambdaHandler<IApiInput, IApiOutput> {
+	public build(basePathMapping: string, endpoints: IEndpointsMap): Handler<IApiInput, IApiOutput>;
+	public build(endpoints: IEndpointsMap): Handler<IApiInput, IApiOutput>;
+	public build(a: string | IEndpointsMap, b?: IEndpointsMap): Handler<IApiInput, IApiOutput> {
 		let basePathMapping: string | undefined;
 		let endpoints: IEndpointsMap;
 		if (typeof a === "string") {

@@ -1,6 +1,6 @@
 import Callbacks, {ICallback, IErrorCallback} from "./callbacks.class";
 import HandlerCustomError from "./error.handler-custom.class";
-import AwsLambdaHandlerFactory, { handlerEventType, LambdaHandler } from "./handler-factory.class";
+import AwsLambdaHandlerFactory, {Handler, handlerEventType} from './handler-factory.class';
 
 export {
 	AwsLambdaHandlerFactory,
@@ -8,6 +8,6 @@ export {
 	ICallback,
 	IErrorCallback,
 	HandlerCustomError,
-	LambdaHandler,
+	Handler,
 	handlerEventType,
 };

@@ -3,7 +3,7 @@ import {expect} from "chai";
 import {beforeEach, describe} from "mocha";
 import HandlerCustomError from "../error.handler-custom.class";
 import TimeoutReachedError from "../error.timeout-reached.class";
-import AwsLambdaHandlerFactory, {handlerEventType, LambdaHandler} from "../handler-factory.class";
+import AwsLambdaHandlerFactory, {handlerEventType, Handler} from "../handler-factory.class";
 import {ApiRequestNotFoundError} from "./error.not-found.class";
 import {AwsLambdaApiHandlerFactory} from "./handler-factory.class";
 import {IApiOutput} from "./output.interface";
@@ -13,7 +13,7 @@ import {Context} from 'aws-lambda';
 describe("Having a api handler factory", () => {
 	let factory: AwsLambdaHandlerFactory;
 	let apiFactory: AwsLambdaApiHandlerFactory;
-	let handler: LambdaHandler<any, any>;
+	let handler: Handler<any, any>;
 	const ctx = {getRemainingTimeInMillis: () => 1000 * 60} as Context;
 	beforeEach(() => {
 		factory = new AwsLambdaHandlerFactory();

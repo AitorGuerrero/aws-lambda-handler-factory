@@ -3,7 +3,7 @@
 import {expect} from "chai";
 import {beforeEach, describe} from "mocha";
 import HandlerCustomError from "./error.handler-custom.class";
-import AwsLambdaHandlerFactory, {handlerEventType, LambdaHandler} from "./handler-factory.class";
+import AwsLambdaHandlerFactory, {Handler, handlerEventType} from './handler-factory.class';
 import {Context} from 'aws-lambda';
 
 describe("Having a handler factory", () => {
@@ -12,11 +12,11 @@ describe("Having a handler factory", () => {
 	const handlerResponse = "response";
 
 	let factory: AwsLambdaHandlerFactory;
-	let handle: LambdaHandler<any, any>;
+	let handle: Handler<any, any>;
 
 	beforeEach(() => {
 		factory = new AwsLambdaHandlerFactory();
-		handle = factory.build(() => handlerResponse);
+		handle = factory.build(async () => handlerResponse);
 	});
 	it("should call the callback with the response", async () => {
 		const response = await handle(null, ctx);
@@ -26,7 +26,7 @@ describe("Having a handler factory", () => {
 		let callBackCalled = false;
 		let callbackCalledBeforeHandler = false;
 		factory.callbacks.initialize.push(() => callBackCalled = true);
-		handle = factory.build(() => callbackCalledBeforeHandler = !callBackCalled);
+		handle = factory.build(async () => callbackCalledBeforeHandler = !callBackCalled);
 		await handle(null, ctx);
 		expect(callBackCalled).to.be.true;
 		expect(callbackCalledBeforeHandler).to.be.false;
@@ -35,7 +35,7 @@ describe("Having a handler factory", () => {
 		let callBackCalled = false;
 		let callbackCalledBeforeHandler = false;
 		factory.callbacks.flush.push(() => callBackCalled = true);
-		handle = factory.build(() => callbackCalledBeforeHandler = !callBackCalled);
+		handle = factory.build(async () => callbackCalledBeforeHandler = !callBackCalled);
 		await handle(null, ctx);
 		expect(callBackCalled).to.be.true;
 		expect(callbackCalledBeforeHandler).to.be.true;
