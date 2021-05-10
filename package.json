@@ -12,6 +12,7 @@
   "author": "Aitor Guerrero <aitgud.dev@gmail.com>",
   "license": "ISC",
   "devDependencies": {
+    "@types/aws-lambda": "^8.10.76",
     "@types/chai": "^4.2.7",
     "@types/mocha": "^8.2.0",
     "@types/node": "^15.0.2",

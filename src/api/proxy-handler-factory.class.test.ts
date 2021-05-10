@@ -1,17 +1,17 @@
 /* tslint:disable:no-unused-expression */
 import {expect} from "chai";
 import {beforeEach, describe} from "mocha";
-import IContext from "../context-interface";
 import AwsLambdaHandlerFactory, {LambdaHandler} from "../handler-factory.class";
 import {IApiInput} from "./api-input.interface";
 import {AwsLambdaApiHandlerFactory} from "./handler-factory.class";
 import HttpMethod from "./http-methods.enum";
 import {IApiOutput} from "./output.interface";
 import {AwsLambdaProxyApiHandlerFactory} from "./proxy-handler-factory.class";
+import {Context} from 'aws-lambda';
 
 describe("Having a proxy api handler factory", () => {
 
-	const ctx = {getRemainingTimeInMillis: () => 0} as IContext;
+	const ctx = {getRemainingTimeInMillis: () => 0} as Context;
 	const httpMethod = "GET";
 	const paramName = "param";
 	const paramValue = "paramValue";

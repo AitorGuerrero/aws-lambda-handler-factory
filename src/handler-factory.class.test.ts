@@ -2,13 +2,13 @@
 
 import {expect} from "chai";
 import {beforeEach, describe} from "mocha";
-import IContext from "./context-interface";
 import HandlerCustomError from "./error.handler-custom.class";
 import AwsLambdaHandlerFactory, {handlerEventType, LambdaHandler} from "./handler-factory.class";
+import {Context} from 'aws-lambda';
 
 describe("Having a handler factory", () => {
 
-	const ctx = {getRemainingTimeInMillis: () => 0} as IContext;
+	const ctx = {getRemainingTimeInMillis: () => 0} as Context;
 	const handlerResponse = "response";
 
 	let factory: AwsLambdaHandlerFactory;

@@ -4,17 +4,17 @@ import {beforeEach, describe} from "mocha";
 import HandlerCustomError from "../error.handler-custom.class";
 import TimeoutReachedError from "../error.timeout-reached.class";
 import AwsLambdaHandlerFactory, {handlerEventType, LambdaHandler} from "../handler-factory.class";
-import IContext from "../context-interface";
 import {ApiRequestNotFoundError} from "./error.not-found.class";
 import {AwsLambdaApiHandlerFactory} from "./handler-factory.class";
 import {IApiOutput} from "./output.interface";
 import {IApiInput} from './api-input.interface';
+import {Context} from 'aws-lambda';
 
 describe("Having a api handler factory", () => {
 	let factory: AwsLambdaHandlerFactory;
 	let apiFactory: AwsLambdaApiHandlerFactory;
 	let handler: LambdaHandler<any, any>;
-	const ctx = {getRemainingTimeInMillis: () => 1000 * 60} as IContext;
+	const ctx = {getRemainingTimeInMillis: () => 1000 * 60} as Context;
 	beforeEach(() => {
 		factory = new AwsLambdaHandlerFactory();
 		apiFactory = new AwsLambdaApiHandlerFactory(factory);
@@ -107,13 +107,6 @@ describe("Having a api handler factory", () => {
 			const response = await apiFactory.build(async () => ({}))(null as unknown as IApiInput, ctx) as IApiOutput;
 			expect(response.headers!["Access-Control-Allow-Credentials"]).to.be.equal(allowCredentials);
 			expect(response.headers!["Access-Control-Allow-Origin"]).to.be.equal(allowedOrigin);
-		});
-	});
-	describe('and the context have no getRemainingTimeInMillis method', () => {
-		beforeEach(() => ctx.getRemainingTimeInMillis = undefined);
-		it('should not fail', async () => {
-			const response = await apiFactory.build(() => ({}))(null as unknown as IApiInput, ctx);
-			expect(response).not.to.be.instanceof(Error);
 		});
 	});
 	describe('and arrives timeout', () => {

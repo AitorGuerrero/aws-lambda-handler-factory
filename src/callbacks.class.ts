@@ -1,7 +1,7 @@
-import IContext from "./context-interface";
+import {Context} from 'aws-lambda';
 
-export type ICallback = (response: unknown, ctx: IContext) => (Promise<unknown> | unknown);
-export type IErrorCallback = (err: Error, ctx: IContext) => (Promise<unknown> | unknown);
+export type ICallback = (response: unknown, ctx: Context) => (Promise<unknown> | unknown);
+export type IErrorCallback = (err: Error, ctx: Context) => (Promise<unknown> | unknown);
 
 export default class Callbacks {
 	public readonly flush: ICallback[] = [];

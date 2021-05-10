@@ -1,11 +1,11 @@
 import {EventEmitter} from "events";
 import Callbacks from "./callbacks.class";
-import IContext from "./context-interface";
 import HandlerCustomError from "./error.handler-custom.class";
 import TimeoutReachedError from "./error.timeout-reached.class";
 import IHandlerFactory from "./handler-facotory.interface";
+import {Context} from 'aws-lambda';
 
-export type LambdaHandler<Input, Output> = (input: Input, ctx: IContext) => Output | Error | Promise<Output | Error>;
+export type LambdaHandler<Input, Output> = (input: Input, ctx: Context) => Output | Error | Promise<Output | Error>;
 
 /**
  * Emitted event types
@@ -81,7 +81,7 @@ export default class AwsLambdaHandlerFactory implements IHandlerFactory {
 		};
 	}
 
-	private async executeTimeControlledHandler<I, O>(input: I, ctx: IContext, handler: LambdaHandler<I, O>) {
+	private async executeTimeControlledHandler<I, O>(input: I, ctx: Context, handler: LambdaHandler<I, O>) {
 		const response = await Promise.race([
 			this.executeHandler(input, ctx, handler),
 			this.timeOut(this.getRemainingTime(ctx)),
@@ -94,7 +94,7 @@ export default class AwsLambdaHandlerFactory implements IHandlerFactory {
 		return response;
 	}
 
-	private async executeHandler<I, O>(input: I, ctx: IContext, handler: LambdaHandler<I, O>) {
+	private async executeHandler<I, O>(input: I, ctx: Context, handler: LambdaHandler<I, O>) {
 		await Promise.all(this.callbacks.initialize.map((c) => c(input, ctx)));
 		this.eventEmitter.emit(handlerEventType.called, input, ctx);
 		const response = await handler(input, ctx);
@@ -107,7 +107,7 @@ export default class AwsLambdaHandlerFactory implements IHandlerFactory {
 		return response;
 	}
 
-	private async handleError(err: Error, ctx: IContext) {
+	private async handleError(err: Error, ctx: Context) {
 		await Promise.all(this.callbacks.handleError.map((c) => c(err, ctx)));
 		this.eventEmitter.emit(handlerEventType.finished);
 		if (err instanceof HandlerCustomError) {
@@ -126,7 +126,7 @@ export default class AwsLambdaHandlerFactory implements IHandlerFactory {
 		});
 	}
 
-	private getRemainingTime(ctx: IContext) {
+	private getRemainingTime(ctx: Context) {
 		if (ctx.getRemainingTimeInMillis === undefined) {
 			return;
 		}
