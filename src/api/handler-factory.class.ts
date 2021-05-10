@@ -1,13 +1,12 @@
 import {EventEmitter} from "events";
 import HandlerCustomError from "../error.handler-custom.class";
 import AwsLambdaHandlerFactory, {Handler} from '../handler-factory.class';
-import {IApiInput} from "./api-input.interface";
 import Callbacks from "./callbacks.class";
 import {ApiRequestError} from "./error.api-request.class";
 import {IApiOutput} from "./output.interface";
-import {Context} from 'aws-lambda';
+import {APIGatewayEvent, Context} from 'aws-lambda';
 
-export type ApiHandler = (input: IApiInput, ctx: Context) => Promise<IApiOutput> | IApiOutput;
+export type ApiHandler = (input: APIGatewayEvent, ctx: Context) => Promise<IApiOutput>;
 
 /**
  * A class for creating api gateway handlers
@@ -50,8 +49,8 @@ export class AwsLambdaApiHandlerFactory {
 	 * Creates a basic handler.
 	 * @param apiHandler
 	 */
-	public build(apiHandler: ApiHandler): Handler<IApiInput, IApiOutput> {
-		return this.handlerFactory.build(async (input: IApiInput, ctx: Context) => {
+	public build(apiHandler: ApiHandler): Handler<APIGatewayEvent, IApiOutput> {
+		return this.handlerFactory.build(async (input: APIGatewayEvent, ctx: Context) => {
 			try {
 				return this.composeResponse(await apiHandler(input, ctx));
 			} catch (err) {

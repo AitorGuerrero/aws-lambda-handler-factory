@@ -7,8 +7,7 @@ import AwsLambdaHandlerFactory, {handlerEventType, Handler} from "../handler-fac
 import {ApiRequestNotFoundError} from "./error.not-found.class";
 import {AwsLambdaApiHandlerFactory} from "./handler-factory.class";
 import {IApiOutput} from "./output.interface";
-import {IApiInput} from './api-input.interface';
-import {Context} from 'aws-lambda';
+import {APIGatewayProxyEvent, Context} from 'aws-lambda';
 
 describe("Having a api handler factory", () => {
 	let factory: AwsLambdaHandlerFactory;
@@ -104,7 +103,7 @@ describe("Having a api handler factory", () => {
 			allowedOrigin,
 		}));
 		it('Should add headers in the response', async () => {
-			const response = await apiFactory.build(async () => ({}))(null as unknown as IApiInput, ctx) as IApiOutput;
+			const response = await apiFactory.build(async () => ({}))(null as unknown as APIGatewayProxyEvent, ctx) as IApiOutput;
 			expect(response.headers!["Access-Control-Allow-Credentials"]).to.be.equal(allowCredentials);
 			expect(response.headers!["Access-Control-Allow-Origin"]).to.be.equal(allowedOrigin);
 		});
@@ -113,7 +112,7 @@ describe("Having a api handler factory", () => {
 		beforeEach(() => ctx.getRemainingTimeInMillis = () => 1);
 		it('should fail', async () => {
 			let error: Error | undefined;
-			await (apiFactory.build(() => new Promise((rs) => setTimeout(rs, 100)))(null as unknown as IApiInput, ctx) as Promise<unknown>)
+			await (apiFactory.build(() => new Promise((rs) => setTimeout(rs, 100)))(null as unknown as APIGatewayProxyEvent, ctx) as Promise<unknown>)
 				.catch((e: Error) => error = e);
 			expect(error).to.be.instanceof(TimeoutReachedError);
 		});

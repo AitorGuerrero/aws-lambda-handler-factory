@@ -2,12 +2,11 @@
 import {expect} from "chai";
 import {beforeEach, describe} from "mocha";
 import AwsLambdaHandlerFactory, {Handler} from "../handler-factory.class";
-import {IApiInput} from "./api-input.interface";
 import {AwsLambdaApiHandlerFactory} from "./handler-factory.class";
 import HttpMethod from "./http-methods.enum";
 import {IApiOutput} from "./output.interface";
 import {AwsLambdaProxyApiHandlerFactory} from "./proxy-handler-factory.class";
-import {Context} from 'aws-lambda';
+import {APIGatewayProxyEvent, Context} from 'aws-lambda';
 
 describe("Having a proxy api handler factory", () => {
 
@@ -21,8 +20,8 @@ describe("Having a proxy api handler factory", () => {
 	let apiFactory: AwsLambdaApiHandlerFactory;
 	let multiEndpointFactory: AwsLambdaProxyApiHandlerFactory;
 	let handle: Handler<any, any>;
-	let input: IApiInput;
-	let parsedInput: IApiInput;
+	let input: APIGatewayProxyEvent;
+	let parsedInput: APIGatewayProxyEvent;
 	let output: IApiOutput;
 
 	beforeEach(() => {
@@ -30,7 +29,7 @@ describe("Having a proxy api handler factory", () => {
 		apiFactory = new AwsLambdaApiHandlerFactory(factory);
 		output = {};
 		multiEndpointFactory = new AwsLambdaProxyApiHandlerFactory(apiFactory);
-		handle = multiEndpointFactory.build(baseMapping, {[`/pre-path/{${paramName}}/post-path`]: {GET: (i) => {
+		handle = multiEndpointFactory.build(baseMapping, {[`/pre-path/{${paramName}}/post-path`]: {GET: async (i) => {
 			parsedInput = i;
 
 			return output;
@@ -39,7 +38,7 @@ describe("Having a proxy api handler factory", () => {
 			httpMethod,
 			path: `${baseMapping}/pre-path/${paramValue}/post-path`,
 			resource: `/pre-path/${paramName}/post-path`,
-		} as IApiInput;
+		} as APIGatewayProxyEvent;
 	});
 	it("should call the correct endpoint", async () => {
 		await handle(input, ctx);
@@ -47,7 +46,7 @@ describe("Having a proxy api handler factory", () => {
 	});
 	it("should include the param in the input", async () => {
 		await handle(input, ctx);
-		expect(parsedInput.pathParameters[paramName]).to.be.equal(paramValue);
+		expect(parsedInput.pathParameters![paramName]).to.be.equal(paramValue);
 	});
 	it("should return 200 http code", async () => {
 		const parsedOutput = await handle(input, ctx);

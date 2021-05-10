@@ -1,9 +1,9 @@
-import {IApiInput} from "./api-input.interface";
 import IEndpointsMap from "./endpoints-map.interface";
 import {ApiRequestNotFoundError} from "./error.not-found.class";
 import {AwsLambdaApiHandlerFactory} from "./handler-factory.class";
 import {IApiOutput} from "./output.interface";
 import {Handler} from '../handler-factory.class';
+import {APIGatewayProxyEvent} from 'aws-lambda';
 
 /**
  * A factory class for creating a handler for a api with several endpoints.
@@ -14,7 +14,7 @@ export class AwsLambdaApiMultiHandlerFactory {
 		private apiHandlerFactory: AwsLambdaApiHandlerFactory,
 	) {}
 
-	public build(endpoints: IEndpointsMap): Handler<IApiInput, IApiOutput> {
+	public build(endpoints: IEndpointsMap): Handler<APIGatewayProxyEvent, IApiOutput> {
 		return this.apiHandlerFactory.build(async (event, ctx) => {
 			const handler = endpoints[event.resource][event.httpMethod];
 			if (handler === undefined) {

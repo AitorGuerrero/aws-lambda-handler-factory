@@ -1,10 +1,9 @@
-import {IApiInput} from "./api-input.interface";
 import IEndpointsMap from "./endpoints-map.interface";
 import {ApiRequestNotFoundError} from "./error.not-found.class";
 import {ApiHandler, AwsLambdaApiHandlerFactory} from "./handler-factory.class";
-import HttpMethod from "./http-methods.enum";
 import {IApiOutput} from "./output.interface";
 import {Handler} from '../handler-factory.class';
+import {APIGatewayProxyEvent} from 'aws-lambda';
 
 interface IEndpointConfig {
 	path: string;
@@ -12,11 +11,7 @@ interface IEndpointConfig {
 	paramsRegExp: RegExp;
 	paramsNames: string[];
 	handlers: {
-		[HttpMethod.get]?: ApiHandler;
-		[HttpMethod.patch]?: ApiHandler;
-		[HttpMethod.put]?: ApiHandler;
-		[HttpMethod.post]?: ApiHandler;
-		[HttpMethod.delete]?: ApiHandler;
+		[httpMethod: string]: ApiHandler;
 	};
 }
 
@@ -44,8 +39,8 @@ export class AwsLambdaProxyApiHandlerFactory {
 		return new RegExp(`^${basePath}${path.replace(/{.*?}/g, "([^/]*)")}$`);
 	}
 
-	private static getHandlerFromInput(input: IApiInput, config: IEndpointConfig) {
-		if (config === undefined || config.handlers[input.httpMethod] === undefined) {
+	private static getHandlerFromInput(input: APIGatewayProxyEvent, config: IEndpointConfig) {
+		if (config === undefined || config.handlers[input.httpMethod]! === undefined) {
 			return;
 		}
 
@@ -74,9 +69,9 @@ export class AwsLambdaProxyApiHandlerFactory {
 		private apiHandlerFactory: AwsLambdaApiHandlerFactory,
 	) {}
 
-	public build(basePathMapping: string, endpoints: IEndpointsMap): Handler<IApiInput, IApiOutput>;
-	public build(endpoints: IEndpointsMap): Handler<IApiInput, IApiOutput>;
-	public build(a: string | IEndpointsMap, b?: IEndpointsMap): Handler<IApiInput, IApiOutput> {
+	public build(basePathMapping: string, endpoints: IEndpointsMap): Handler<APIGatewayProxyEvent, IApiOutput>;
+	public build(endpoints: IEndpointsMap): Handler<APIGatewayProxyEvent, IApiOutput>;
+	public build(a: string | IEndpointsMap, b?: IEndpointsMap): Handler<APIGatewayProxyEvent, IApiOutput> {
 		let basePathMapping: string | undefined;
 		let endpoints: IEndpointsMap;
 		if (typeof a === "string") {
@@ -108,11 +103,11 @@ export class AwsLambdaProxyApiHandlerFactory {
 		});
 	}
 
-	private getHandlerConfigFromInput(input: IApiInput) {
+	private getHandlerConfigFromInput(input: APIGatewayProxyEvent) {
 		return this.endpointsConfig.find((o) => o.testRegExp.test(input.path));
 	}
 
-	private composeEvent(originalEvent: IApiInput, handlerConfig: IEndpointConfig) {
+	private composeEvent(originalEvent: APIGatewayProxyEvent, handlerConfig: IEndpointConfig) {
 		const paramsValues = handlerConfig.paramsRegExp.exec(originalEvent.path);
 		return Object.assign({}, originalEvent, {
 			path: handlerConfig.path,
