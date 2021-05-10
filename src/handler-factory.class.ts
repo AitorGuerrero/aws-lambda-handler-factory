@@ -2,7 +2,6 @@ import {EventEmitter} from "events";
 import Callbacks from "./callbacks.class";
 import HandlerCustomError from "./error.handler-custom.class";
 import TimeoutReachedError from "./error.timeout-reached.class";
-import IHandlerFactory from "./handler-facotory.interface";
 import {Context} from 'aws-lambda';
 
 export type LambdaHandler<Input, Output> = (input: Input, ctx: Context) => Output | Error | Promise<Output | Error>;
@@ -36,7 +35,7 @@ export enum handlerEventType {
  * ```
  *
  */
-export default class AwsLambdaHandlerFactory implements IHandlerFactory {
+export default class AwsLambdaHandlerFactory {
 
 	/**
 	 * Emits the events defined in the HandlerEventType enum

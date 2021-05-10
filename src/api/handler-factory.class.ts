@@ -4,7 +4,6 @@ import AwsLambdaHandlerFactory, {LambdaHandler} from "../handler-factory.class";
 import {IApiInput} from "./api-input.interface";
 import Callbacks from "./callbacks.class";
 import {ApiRequestError} from "./error.api-request.class";
-import {IAwsLambdaApiHandlerFactory} from "./handler-factory.interface";
 import {IApiOutput} from "./output.interface";
 import {Context} from 'aws-lambda';
 
@@ -13,7 +12,7 @@ export type ApiHandler = (input: IApiInput, ctx: Context) => Promise<IApiOutput>
 /**
  * A class for creating api gateway handlers
  */
-export class AwsLambdaApiHandlerFactory implements IAwsLambdaApiHandlerFactory {
+export class AwsLambdaApiHandlerFactory {
 
 	/**
 	 * Emits the events defined in the HandlerEventType enum
