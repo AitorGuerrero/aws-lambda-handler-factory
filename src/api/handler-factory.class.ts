@@ -57,7 +57,18 @@ export class AwsLambdaApiHandlerFactory implements IAwsLambdaApiHandlerFactory {
 				return this.composeResponse(await apiHandler(input, ctx));
 			} catch (err) {
 				await Promise.all(this.callbacks.onError.map((cb) => cb(err)));
-				this.handleError(err);
+				if (err instanceof ApiRequestError) {
+					throw new HandlerCustomError({
+						body: err.message,
+						headers: this.makeHeaders(),
+						statusCode: err.statusCode,
+					}, err);
+				}
+				throw new HandlerCustomError({
+					body: err.message,
+					headers: this.makeHeaders(),
+					statusCode: 500,
+				}, err);
 			}
 		});
 	}
@@ -75,21 +86,6 @@ export class AwsLambdaApiHandlerFactory implements IAwsLambdaApiHandlerFactory {
 				headers: this.makeHeaders(response.headers),
 			},
 		);
-	}
-
-	private handleError(err: Error) {
-		if (err instanceof ApiRequestError) {
-			throw new HandlerCustomError({
-				body: err.message,
-				headers: this.makeHeaders(),
-				statusCode: err.statusCode,
-			}, err);
-		}
-		throw new HandlerCustomError({
-			body: err.message,
-			headers: this.makeHeaders(),
-			statusCode: 500,
-		}, err);
 	}
 
 	private makeHeaders(inputHeaders?: {[key: string]: string | boolean | number | null}) {

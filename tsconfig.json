@@ -8,6 +8,10 @@
         "declaration": true,
         "experimentalDecorators": true,
         "emitDecoratorMetadata": true,
-        "sourceMap": true
+        "sourceMap": true,
+        "removeComments": true,
+        "strictNullChecks": true,
+        "strictFunctionTypes": true,
+        "incremental": true
     }
 }

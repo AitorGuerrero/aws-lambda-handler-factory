@@ -117,7 +117,10 @@ export default class AwsLambdaHandlerFactory implements IHandlerFactory {
 		}
 	}
 
-	private timeOut(remainingTime: number) {
+	private timeOut(remainingTime: number | undefined) {
+		if (remainingTime === undefined) {
+			return;
+		}
 		return new Promise((rs) => {
 			this.timer = setTimeout(() => rs(new TimeoutReachedError()), remainingTime <= 0 ? 0 : remainingTime);
 		});

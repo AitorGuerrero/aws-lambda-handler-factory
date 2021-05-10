@@ -12,8 +12,8 @@ export default interface IContext {
 	functionName: string;
 	memoryLimitInMB: string;
 	functionVersion: string;
-	getRemainingTimeInMillis: () => number;
 	invokeid: string;
 	awsRequestId: string;
 	invokedFunctionArn: string;
+	getRemainingTimeInMillis?: () => number;
 }
