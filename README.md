@@ -31,16 +31,19 @@ export const handle = factory.build(async (input, ctx) => {
 ## npm scripts
 
 Build the js files from typescript:
+
 ```
 npm run build
 ```
 
 Running tests:
+
 ```
 npm run test
 ```
 
 Running style check:
+
 ```
 npm run style
 ```
@@ -55,9 +58,8 @@ We use [SemVer](http://semver.org/) for versioning. For the versions available, 
 
 ## Authors
 
-* **Aitor Guerrero** - *Initial work* - [AitorGuerrero](https://github.com/AitorGuerrero)
+- **Aitor Guerrero** - _Initial work_ - [AitorGuerrero](https://github.com/AitorGuerrero)
 
 ## License
 
 This project is licensed under the ISC License - see the [LICENSE.md](LICENSE.md) file for details
-

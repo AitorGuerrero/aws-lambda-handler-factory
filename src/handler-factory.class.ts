@@ -1,21 +1,19 @@
-import {EventEmitter} from "events";
-import Callbacks from "./callbacks.class";
-import HandlerCustomError from "./error.handler-custom.class";
-import TimeoutReachedError from "./error.timeout-reached.class";
-import {Context} from 'aws-lambda';
-
-export type Handler<TEvent = unknown, TResult = unknown> = (event: TEvent, context: Context) => Promise<TResult>;
+import { AsyncHandler, Context, Handler } from 'aws-lambda';
+import { EventEmitter } from 'events';
+import Callbacks from './callbacks.class';
+import HandlerCustomError from './error.handler-custom.class';
+import TimeoutReachedError from './error.timeout-reached.class';
 
 /**
  * Emitted event types
  */
 export enum handlerEventType {
-	called = "called",
-	succeeded = "succeeded",
-	error = "error",
-	finished = "finished",
-	timeOut = "timeOut",
-	persisted = "persisted",
+	called = 'called',
+	succeeded = 'succeeded',
+	error = 'error',
+	finished = 'finished',
+	timeOut = 'timeOut',
+	persisted = 'persisted',
 }
 
 /**
@@ -36,7 +34,6 @@ export enum handlerEventType {
  *
  */
 export default class AwsLambdaHandlerFactory {
-
 	/**
 	 * Emits the events defined in the HandlerEventType enum
 	 * IMPORTANT!!
@@ -64,17 +61,19 @@ export default class AwsLambdaHandlerFactory {
 	 * @generic O The output emitted by the handler
 	 * @param handler Your own handler
 	 */
-	public build<I, O>(handler: Handler<I, O>): Handler<I, O> {
+	public build<I, O>(handler: Handler<I, O>): AsyncHandler<I, O> {
 		return async (input, ctx) => {
 			try {
 				try {
 					return await this.executeTimeControlledHandler(input, ctx, handler);
 				} catch (err) {
 					this.clearTimeOutControl();
+
 					return this.eventEmitter.emit(handlerEventType.error, err);
 				}
 			} catch (err) {
 				this.clearTimeOutControl();
+
 				return await this.handleError(err, ctx);
 			}
 		};
@@ -120,8 +119,12 @@ export default class AwsLambdaHandlerFactory {
 		if (remainingTime === undefined) {
 			return;
 		}
+
 		return new Promise((rs) => {
-			this.timer = setTimeout(() => rs(new TimeoutReachedError()), remainingTime <= 0 ? 0 : remainingTime);
+			this.timer = setTimeout(
+				() => rs(new TimeoutReachedError()),
+				remainingTime <= 0 ? 0 : remainingTime,
+			);
 		});
 	}
 
@@ -129,6 +132,7 @@ export default class AwsLambdaHandlerFactory {
 		if (ctx.getRemainingTimeInMillis === undefined) {
 			return;
 		}
+
 		return ctx.getRemainingTimeInMillis() - this.timeOutSecureMargin;
 	}
 

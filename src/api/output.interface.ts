@@ -1,6 +1,5 @@
-/* tslint:disable:ban-types */
-export interface IApiOutput {
-	body?: string | Object;
+export interface ApiOutput {
+	body?: unknown;
 	statusCode?: number;
-	headers?: {[key: string]: string | boolean | number | null};
+	headers?: { [key: string]: string | boolean | number | null };
 }

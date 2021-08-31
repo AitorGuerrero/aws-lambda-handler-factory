@@ -5,8 +5,7 @@
 node_modules
 
 # Generated
-*.js
-*.js.map
-*.d.ts
+dist
 .nyc_output
 tsconfig.tsbuildinfo
+yarn-error.log

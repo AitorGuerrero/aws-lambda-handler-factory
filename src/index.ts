@@ -1,13 +1,18 @@
-import Callbacks, {ICallback, IErrorCallback} from "./callbacks.class";
-import HandlerCustomError from "./error.handler-custom.class";
-import AwsLambdaHandlerFactory, {Handler, handlerEventType} from './handler-factory.class';
+import { Handler } from './aws-lambda-handler';
+import Callbacks, { Callback, ErrorCallback } from './callbacks.class';
+import HandlerCustomError from './error.handler-custom.class';
+import AwsLambdaHandlerFactory, { handlerEventType } from './handler-factory.class';
+
+export * as api from './api';
 
 export {
+	Handler,
 	AwsLambdaHandlerFactory,
 	Callbacks,
-	ICallback,
-	IErrorCallback,
+	Callback,
+	ErrorCallback,
 	HandlerCustomError,
-	Handler,
 	handlerEventType,
 };
+
+export default AwsLambdaHandlerFactory;

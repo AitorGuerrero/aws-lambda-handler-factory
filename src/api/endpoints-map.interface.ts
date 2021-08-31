@@ -1,5 +1,4 @@
-import {ApiHandler} from "./handler-factory.class";
-import HttpMethod from "./http-methods.enum";
+import { ApiHandler } from './handler-factory.class';
 
 export default interface IEndpointsMap {
 	[route: string]: {

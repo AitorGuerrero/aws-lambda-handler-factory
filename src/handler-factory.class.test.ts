@@ -1,123 +1,120 @@
-/* tslint:disable:no-unused-expression */
+import * as expect from 'expect';
+import { beforeEach, describe } from 'mocha';
+import { Context, Handler } from 'aws-lambda';
+import HandlerCustomError from './error.handler-custom.class';
+import AwsLambdaHandlerFactory, { handlerEventType } from './handler-factory.class';
 
-import {expect} from "chai";
-import {beforeEach, describe} from "mocha";
-import HandlerCustomError from "./error.handler-custom.class";
-import AwsLambdaHandlerFactory, {Handler, handlerEventType} from './handler-factory.class';
-import {Context} from 'aws-lambda';
-
-describe("Having a handler factory", () => {
-
-	const ctx = {getRemainingTimeInMillis: () => 0} as Context;
-	const handlerResponse = "response";
+describe('Having a handler factory', () => {
+	const ctx = { getRemainingTimeInMillis: () => 0 } as Context;
+	const handlerResponse = 'response';
 
 	let factory: AwsLambdaHandlerFactory;
-	let handle: Handler<any, any>;
+	let handle: Handler<unknown, unknown>;
 
 	beforeEach(() => {
 		factory = new AwsLambdaHandlerFactory();
 		handle = factory.build(async () => handlerResponse);
 	});
-	it("should call the callback with the response", async () => {
+	it('should call the callback with the response', async () => {
 		const response = await handle(null, ctx);
-		expect(response).to.be.equal(handlerResponse);
+		expect(response).toStrictEqual(handlerResponse);
 	});
-	it("should call onInit callback before calling the handler", async () => {
+	it('should call onInit callback before calling the handler', async () => {
 		let callBackCalled = false;
 		let callbackCalledBeforeHandler = false;
-		factory.callbacks.initialize.push(() => callBackCalled = true);
-		handle = factory.build(async () => callbackCalledBeforeHandler = !callBackCalled);
+		factory.callbacks.initialize.push(() => (callBackCalled = true));
+		handle = factory.build(async () => (callbackCalledBeforeHandler = !callBackCalled));
 		await handle(null, ctx);
-		expect(callBackCalled).to.be.true;
-		expect(callbackCalledBeforeHandler).to.be.false;
+		expect(callBackCalled).toBeTruthy();
+		expect(callbackCalledBeforeHandler).toBeFalsy();
 	});
-	it("should call onSucceeded callback after calling the handler", async () => {
+	it('should call onSucceeded callback after calling the handler', async () => {
 		let callBackCalled = false;
 		let callbackCalledBeforeHandler = false;
-		factory.callbacks.flush.push(() => callBackCalled = true);
-		handle = factory.build(async () => callbackCalledBeforeHandler = !callBackCalled);
+		factory.callbacks.flush.push(() => (callBackCalled = true));
+		handle = factory.build(async () => (callbackCalledBeforeHandler = !callBackCalled));
 		await handle(null, ctx);
-		expect(callBackCalled).to.be.true;
-		expect(callbackCalledBeforeHandler).to.be.true;
+		expect(callBackCalled).toBeTruthy();
+		expect(callbackCalledBeforeHandler).toBeTruthy();
 	});
-	it("should not call onError callback", async () => {
+	it('should not call onError callback', async () => {
 		let callBackCalled = false;
-		factory.callbacks.handleError.push(() => callBackCalled = true);
+		factory.callbacks.handleError.push(() => (callBackCalled = true));
 		await handle(null, ctx);
-		expect(callBackCalled).to.be.false;
+		expect(callBackCalled).toBeFalsy();
 	});
-	describe("and the handler fails", () => {
-		const error = new Error("ERROR");
+	describe('and the handler fails', () => {
+		const error = new Error('ERROR');
 		beforeEach(() => {
 			handle = factory.build(() => Promise.reject(error));
 		});
-		it("should emit the error", async () => {
+		it('should emit the error', async () => {
 			let emittedErr: Error | undefined;
 			factory.eventEmitter.on(handlerEventType.error, (err) => {
 				emittedErr = err;
 				throw err;
 			});
-			await handle(null, ctx).catch((e: Error) => emittedErr = e);
-			expect(emittedErr).to.be.eq(error);
+			await (handle(null, ctx) ).catch((e: Error) => (emittedErr = e));
+			expect(emittedErr).toStrictEqual(error);
 		});
-		it("should call the handler callback with the error", async () => {
+		it('should call the handler callback with the error', async () => {
 			let emittedErr: Error | undefined;
-			await handle(null, ctx).catch((e: Error) => emittedErr = e);
-			expect(emittedErr).to.be.eq(error);
+			await (handle(null, ctx) ).catch((e: Error) => (emittedErr = e));
+			expect(emittedErr).toStrictEqual(error);
 		});
-		it("should emit finished event", async () => {
+		it('should emit finished event', async () => {
 			let emittedFinished = false;
-			factory.eventEmitter.on(handlerEventType.finished, () => emittedFinished = true);
-			await handle(null, ctx).catch((): void => undefined);
-			expect(emittedFinished).to.be.true;
+			factory.eventEmitter.on(handlerEventType.finished, () => (emittedFinished = true));
+			await (handle(null, ctx) ).catch((): void => undefined);
+			expect(emittedFinished).toBeTruthy();
 		});
-		it("should not emit succeeded event", async () => {
+		it('should not emit succeeded event', async () => {
 			let emitted = false;
-			factory.eventEmitter.on(handlerEventType.succeeded, () => emitted = true);
-			await handle(null, ctx).catch((): void => undefined);
-			expect(emitted).to.be.false;
+			factory.eventEmitter.on(handlerEventType.succeeded, () => (emitted = true));
+			await (handle(null, ctx) ).catch((): void => undefined);
+			expect(emitted).toBeFalsy();
 		});
-		it("should call onError callback after calling the handler", async () => {
+		it('should call onError callback after calling the handler', async () => {
 			let callBackCalled = false;
 			let callbackCalledBeforeHandler = false;
-			factory.callbacks.handleError.push(() => callBackCalled = true);
+			factory.callbacks.handleError.push(() => (callBackCalled = true));
 			handle = factory.build(async () => {
 				callbackCalledBeforeHandler = !callBackCalled;
 				throw error;
 			});
-			await handle(null, ctx).catch((): void => undefined);
-			expect(callBackCalled).to.be.true;
-			expect(callbackCalledBeforeHandler).to.be.true;
+			await (handle(null, ctx) ).catch((): void => undefined);
+			expect(callBackCalled).toBeTruthy();
+			expect(callbackCalledBeforeHandler).toBeTruthy();
 		});
 	});
-	describe("and the handler fails with custom response", () => {
-		const errorContent = "ERROR CONTENT";
+	describe('and the handler fails with custom response', () => {
+		const errorContent = 'ERROR CONTENT';
 		const error = new HandlerCustomError(errorContent);
-		beforeEach(() => handle = factory.build(() => Promise.reject(error)));
-		it("should return the error content", async () => {
+		beforeEach(() => (handle = factory.build(() => Promise.reject(error))));
+		it('should return the error content', async () => {
 			const response = await handle(null, ctx);
-			expect(response).to.be.eql(errorContent);
+			expect(response).toStrictEqual(errorContent);
 		});
-		it("should emit the error", async () => {
+		it('should emit the error', async () => {
 			let emittedErr: any = null;
 			factory.eventEmitter.on(handlerEventType.error, (err) => {
 				emittedErr = err;
 				throw err;
 			});
 			await handle(null, ctx);
-			expect(emittedErr).to.be.eq(error);
+			expect(emittedErr).toStrictEqual(error);
 		});
-		it("should emit finished event", async () => {
+		it('should emit finished event', async () => {
 			let emittedFinished = false;
-			factory.eventEmitter.on(handlerEventType.finished, () => emittedFinished = true);
+			factory.eventEmitter.on(handlerEventType.finished, () => (emittedFinished = true));
 			await handle(null, ctx);
-			expect(emittedFinished).to.be.true;
+			expect(emittedFinished).toBeTruthy();
 		});
-		it("should not emit succeeded event", async () => {
+		it('should not emit succeeded event', async () => {
 			let emitted = false;
-			factory.eventEmitter.on(handlerEventType.succeeded, () => emitted = true);
+			factory.eventEmitter.on(handlerEventType.succeeded, () => (emitted = true));
 			await handle(null, ctx);
-			expect(emitted).to.be.false;
+			expect(emitted).toBeFalsy();
 		});
 	});
 });

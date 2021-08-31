@@ -1,11 +1,11 @@
-import {Context} from 'aws-lambda';
+import { Context } from 'aws-lambda';
 
-export type ICallback = (response: unknown, ctx: Context) => (Promise<unknown> | unknown);
-export type IErrorCallback = (err: Error, ctx: Context) => (Promise<unknown> | unknown);
+export type Callback = (response: unknown, ctx: Context) => Promise<unknown> | unknown;
+export type ErrorCallback = (err: Error, ctx: Context) => Promise<unknown> | unknown;
 
 export default class Callbacks {
-	public readonly flush: ICallback[] = [];
-	public readonly handleError: IErrorCallback[] = [];
-	public readonly initialize: ICallback[] = [];
-	public readonly persist: ICallback[] = [];
+	public readonly flush: Callback[] = [];
+	public readonly handleError: ErrorCallback[] = [];
+	public readonly initialize: Callback[] = [];
+	public readonly persist: Callback[] = [];
 }

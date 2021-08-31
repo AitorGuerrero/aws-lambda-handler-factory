@@ -1,5 +1,5 @@
-export default class TimeoutReachedError<R> extends Error {
+export default class TimeoutReachedError extends Error {
 	constructor() {
-		super("Timeout reached");
+		super('Timeout reached');
 	}
 }
