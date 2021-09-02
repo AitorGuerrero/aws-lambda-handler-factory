@@ -4,10 +4,14 @@
 	"description": "AWS Serverless handlers factories",
 	"main": "./src/index.js",
 	"exports": {
+		".": "./src/index.js",
 		"./api": "./src/api/index.js"
 	},
 	"typesVersions": {
 		"*": {
+			".": [
+				"./src/index.d.ts"
+			],
 			"api": [
 				"./src/api/index.d.ts"
 			]
