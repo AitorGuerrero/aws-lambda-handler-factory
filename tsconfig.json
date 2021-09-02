@@ -1,7 +1,6 @@
 {
 	"include": [".eslintrc.js", ".lintstagedrc.js", "./src/**/*.ts"],
 	"compilerOptions": {
-		"outDir": "dist",
 		"experimentalDecorators": true,
 		"emitDecoratorMetadata": true,
 		"module": "commonjs",
@@ -12,6 +11,7 @@
 		"incremental": true,
 		"strictNullChecks": true,
 		"noImplicitThis": true,
-		"strictFunctionTypes": true
+		"strictFunctionTypes": true,
+		"declaration": true
 	}
 }

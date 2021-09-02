@@ -1,6 +1,6 @@
 {
 	"name": "aws-lambda-handler-factory",
-	"version": "6.0.0",
+	"version": "7.0.3-1",
 	"description": "AWS Serverless handlers factories",
 	"main": "dist/index.js",
 	"types": "./dist/index.d.ts",
