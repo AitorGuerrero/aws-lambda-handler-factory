@@ -6,6 +6,13 @@
 	"exports": {
 		"./api": "./src/api/index.js"
 	},
+	"typesVersions": {
+		"*": {
+			"api": [
+				"./src/api/index.d.ts"
+			]
+		}
+	},
 	"scripts": {
 		"build": "yarn tsc --build",
 		"test": "mocha",
