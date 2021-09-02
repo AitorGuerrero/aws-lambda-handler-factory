@@ -1,8 +1,9 @@
-import { AsyncHandler, Context, Handler } from 'aws-lambda';
+import { Context } from 'aws-lambda';
 import { EventEmitter } from 'events';
 import Callbacks from './callbacks.class';
 import HandlerCustomError from './error.handler-custom.class';
 import TimeoutReachedError from './error.timeout-reached.class';
+import { AsyncHandler } from './aws-lambda-handler';
 
 /**
  * Emitted event types
@@ -61,7 +62,7 @@ export default class AwsLambdaHandlerFactory {
 	 * @generic O The output emitted by the handler
 	 * @param handler Your own handler
 	 */
-	public build<I, O>(handler: Handler<I, O>): AsyncHandler<I, O> {
+	public build<I, O>(handler: AsyncHandler<I, O>): AsyncHandler<I, O> {
 		return async (input, ctx) => {
 			try {
 				try {
@@ -79,7 +80,11 @@ export default class AwsLambdaHandlerFactory {
 		};
 	}
 
-	private async executeTimeControlledHandler<I, O>(input: I, ctx: Context, handler: Handler<I, O>) {
+	private async executeTimeControlledHandler<I, O>(
+		input: I,
+		ctx: Context,
+		handler: AsyncHandler<I, O>,
+	) {
 		const response = await Promise.race([
 			this.executeHandler(input, ctx, handler),
 			this.timeOut(this.getRemainingTime(ctx)),
@@ -92,7 +97,7 @@ export default class AwsLambdaHandlerFactory {
 		return response;
 	}
 
-	private async executeHandler<I, O>(input: I, ctx: Context, handler: Handler<I, O>) {
+	private async executeHandler<I, O>(input: I, ctx: Context, handler: AsyncHandler<I, O>) {
 		await Promise.all(this.callbacks.initialize.map((c) => c(input, ctx)));
 		this.eventEmitter.emit(handlerEventType.called, input, ctx);
 		const response = await handler(input, ctx);

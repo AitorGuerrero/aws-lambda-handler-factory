@@ -1,15 +1,16 @@
 import * as expect from 'expect';
 import { beforeEach, describe } from 'mocha';
-import { Context, Handler } from 'aws-lambda';
+import { Context } from 'aws-lambda';
 import HandlerCustomError from './error.handler-custom.class';
 import AwsLambdaHandlerFactory, { handlerEventType } from './handler-factory.class';
+import { AsyncHandler } from './aws-lambda-handler';
 
 describe('Having a handler factory', () => {
 	const ctx = { getRemainingTimeInMillis: () => 0 } as Context;
 	const handlerResponse = 'response';
 
 	let factory: AwsLambdaHandlerFactory;
-	let handle: Handler<unknown, unknown>;
+	let handle: AsyncHandler<unknown, unknown>;
 
 	beforeEach(() => {
 		factory = new AwsLambdaHandlerFactory();
@@ -54,24 +55,24 @@ describe('Having a handler factory', () => {
 				emittedErr = err;
 				throw err;
 			});
-			await (handle(null, ctx) ).catch((e: Error) => (emittedErr = e));
+			await handle(null, ctx).catch((e: Error) => (emittedErr = e));
 			expect(emittedErr).toStrictEqual(error);
 		});
 		it('should call the handler callback with the error', async () => {
 			let emittedErr: Error | undefined;
-			await (handle(null, ctx) ).catch((e: Error) => (emittedErr = e));
+			await handle(null, ctx).catch((e: Error) => (emittedErr = e));
 			expect(emittedErr).toStrictEqual(error);
 		});
 		it('should emit finished event', async () => {
 			let emittedFinished = false;
 			factory.eventEmitter.on(handlerEventType.finished, () => (emittedFinished = true));
-			await (handle(null, ctx) ).catch((): void => undefined);
+			await handle(null, ctx).catch((): void => undefined);
 			expect(emittedFinished).toBeTruthy();
 		});
 		it('should not emit succeeded event', async () => {
 			let emitted = false;
 			factory.eventEmitter.on(handlerEventType.succeeded, () => (emitted = true));
-			await (handle(null, ctx) ).catch((): void => undefined);
+			await handle(null, ctx).catch((): void => undefined);
 			expect(emitted).toBeFalsy();
 		});
 		it('should call onError callback after calling the handler', async () => {
@@ -82,7 +83,7 @@ describe('Having a handler factory', () => {
 				callbackCalledBeforeHandler = !callBackCalled;
 				throw error;
 			});
-			await (handle(null, ctx) ).catch((): void => undefined);
+			await handle(null, ctx).catch((): void => undefined);
 			expect(callBackCalled).toBeTruthy();
 			expect(callbackCalledBeforeHandler).toBeTruthy();
 		});
