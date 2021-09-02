@@ -2,7 +2,7 @@
 	"name": "aws-lambda-handler-factory",
 	"version": "7.0.3-2",
 	"description": "AWS Serverless handlers factories",
-	"main": "src/index.js",
+	"main": "./src/index.js",
 	"types": "./src/index.d.ts",
 	"exports": {
 		"./api": "./src/api/index.js"
