@@ -12,7 +12,7 @@
 		"test:coverage": "nyc mocha",
 		"style": "tslint -p .",
 		"prepare": "husky install",
-		"prepack": "rm -Rf dist && tsc --build",
+		"prepack": "tsc --build",
 		"postpack": "tsc --build --clean"
 	},
 	"author": "Aitor Guerrero <aitgud.dev@gmail.com>",
