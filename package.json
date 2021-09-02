@@ -3,16 +3,8 @@
 	"version": "7.0.3-3",
 	"description": "AWS Serverless handlers factories",
 	"main": "./src/index.js",
-	"types": "./src/index.d.ts",
 	"exports": {
 		"./api": "./src/api/index.js"
-	},
-	"typesVersions": {
-		"*": {
-			"api": [
-				"./src/api/index.d.ts"
-			]
-		}
 	},
 	"scripts": {
 		"build": "yarn tsc --build",
