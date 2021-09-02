@@ -14,10 +14,8 @@
 		}
 	},
 	"scripts": {
-		"build": "yarn tsc --build",
 		"test": "mocha",
 		"test:coverage": "nyc mocha",
-		"style": "tslint -p .",
 		"prepare": "husky install",
 		"prepack": "tsc --build",
 		"postpack": "tsc --build --clean"
