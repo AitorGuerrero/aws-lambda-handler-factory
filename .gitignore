@@ -9,3 +9,7 @@ dist
 .nyc_output
 tsconfig.tsbuildinfo
 yarn-error.log
+src/**/*.js
+src/**/*.js.map
+src/**/*.d.ts
+!src/aws-lambda-handler.d.ts
