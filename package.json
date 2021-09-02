@@ -15,10 +15,13 @@
 		}
 	},
 	"scripts": {
-		"build": "tsc",
+		"build": "yarn tsc --build",
 		"test": "mocha",
 		"test:coverage": "nyc mocha",
-		"style": "tslint -p ."
+		"style": "tslint -p .",
+		"prepare": "husky install",
+		"prepack": "rm -Rf dist && tsc --build",
+		"postpack": "tsc --build --clean"
 	},
 	"author": "Aitor Guerrero <aitgud.dev@gmail.com>",
 	"license": "ISC",
